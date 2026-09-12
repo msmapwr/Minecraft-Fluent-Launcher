@@ -6,10 +6,17 @@ namespace WINUI.Services;
 /// <inheritdoc cref="IThemeService" />
 public sealed class ThemeService : IThemeService
 {
+    private readonly ISettingsService _settings;
     private FrameworkElement? _root;
 
+    public ThemeService(ISettingsService settings)
+    {
+        _settings = settings;
+        Current = settings.Settings.Theme;
+    }
+
     /// <inheritdoc />
-    public AppTheme Current { get; private set; } = AppTheme.System;
+    public AppTheme Current { get; private set; }
 
     /// <inheritdoc />
     public void Attach(FrameworkElement root)
@@ -21,7 +28,13 @@ public sealed class ThemeService : IThemeService
     /// <inheritdoc />
     public void SetTheme(AppTheme theme)
     {
-        Current = theme;
+        if (theme != Current)
+        {
+            Current = theme;
+            _settings.Settings.Theme = theme;
+            _settings.Save();
+        }
+
         Apply(theme);
     }
 

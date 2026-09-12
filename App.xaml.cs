@@ -31,6 +31,7 @@ namespace WINUI
             var services = new ServiceCollection();
 
             // Services
+            services.AddSingleton<ISettingsService, JsonSettingsService>();
             services.AddSingleton<IThemeService, ThemeService>();
 
             // ViewModels

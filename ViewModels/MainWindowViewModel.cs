@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.Generic;
+using System.Linq;
 using WINUI.Models;
 using WINUI.Services;
 
@@ -39,7 +40,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         AppTitle = "Minecraft 启动器";
         StatusText = "项目骨架已就绪";
-        SelectedThemeOption = ThemeOptions[0];
+
+        // 与已保存的主题偏好保持一致。
+        SelectedThemeOption = ThemeOptions.First(option => option.Value == themeService.Current);
     }
 
     /// <summary>选中项变化时立即应用主题。</summary>

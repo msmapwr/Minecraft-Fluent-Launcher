@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 初始化 Git 仓库，纳入 WinUI 3 项目基线（Windows App SDK 2.4.0、单项目 MSIX、Mica 背景）。
 - 新增 `Themes/Tokens.xaml` 设计令牌：间距、内边距、圆角、字号、字体，以及深色 / 浅色 / 高对比度三套主题画笔；`App.xaml` 已合并该字典，主窗口改用令牌而非硬编码数值。
 - 新增主题服务 `IThemeService` / `ThemeService`：支持运行时切换「跟随系统 / 浅色 / 深色」，主窗口注入该服务并提供切换入口。
+- 新增设置持久化：`ISettingsService` / `JsonSettingsService` 把设置写入 `%LOCALAPPDATA%\MinecraftLauncher\settings.json`，使用源生成 JSON 上下文以保证裁剪安全；主题偏好在下次启动时恢复。
 
 ### Changed
 
