@@ -317,6 +317,160 @@ public sealed class MockLauncherDataService : ILauncherDataService
         },
     ];
 
+    private static readonly IReadOnlyList<ModEntry> Mods =
+    [
+        new()
+        {
+            Id = "sodium",
+            Name = "Sodium",
+            Author = "CaffeineMC",
+            Version = "0.6.5",
+            UpdateVersion = "0.6.9",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "sodium-fabric-0.6.5.jar",
+            SizeKb = 1180,
+            Description = "重写渲染管线，大幅提升帧率与区块加载速度，同时保持原版画面风格。",
+            Dependencies = [],
+            Side = ModSide.Client,
+        },
+        new()
+        {
+            Id = "lithium",
+            Name = "Lithium",
+            Author = "CaffeineMC",
+            Version = "0.14.3",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "lithium-fabric-0.14.3.jar",
+            SizeKb = 864,
+            Description = "优化物理、方块刻与实体 AI 等通用逻辑，不改变游戏行为。",
+            Dependencies = [],
+            Side = ModSide.Both,
+        },
+        new()
+        {
+            Id = "fabric-api",
+            Name = "Fabric API",
+            Author = "FabricMC",
+            Version = "0.119.2",
+            UpdateVersion = "0.119.4",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "fabric-api-0.119.2.jar",
+            SizeKb = 2140,
+            Description = "Fabric 生态的基础库，绝大多数 Fabric 模组的前置依赖。",
+            Dependencies = [],
+            Side = ModSide.Both,
+        },
+        new()
+        {
+            Id = "jei",
+            Name = "Just Enough Items",
+            Author = "mezz",
+            Version = "19.21.0",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "jei-1.21.4-fabric-19.21.0.jar",
+            SizeKb = 1320,
+            Description = "在界面中浏览全部物品与合成表，模组包必备的查询工具。",
+            Dependencies = [],
+            Side = ModSide.Client,
+        },
+        new()
+        {
+            Id = "modmenu",
+            Name = "Mod Menu",
+            Author = "Prospector",
+            Version = "11.0.3",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "modmenu-11.0.3.jar",
+            SizeKb = 246,
+            Description = "在游戏内查看与管理已安装模组及其配置入口。",
+            Dependencies = ["Fabric API", "Text Placeholder API"],
+            Side = ModSide.Client,
+            IsEnabledByDefault = false,
+        },
+        new()
+        {
+            Id = "cloth-config",
+            Name = "Cloth Config API",
+            Author = "shedaniel",
+            Version = "15.0.140",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "cloth-config-15.0.140-fabric.jar",
+            SizeKb = 612,
+            Description = "为模组提供统一的配置界面框架。",
+            Dependencies = [],
+            Side = ModSide.Both,
+        },
+        new()
+        {
+            Id = "appleskin",
+            Name = "AppleSkin",
+            Author = "squeek502",
+            Version = "3.0.5",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "appleskin-fabric-3.0.5.jar",
+            SizeKb = 148,
+            Description = "在饥饿条上显示食物恢复量与饱和度等信息。",
+            Dependencies = [],
+            Side = ModSide.Client,
+        },
+        new()
+        {
+            Id = "iris",
+            Name = "Iris Shaders",
+            Author = "IrisShaders",
+            Version = "1.8.1",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "iris-1.8.1+mc1.21.4.jar",
+            SizeKb = 1720,
+            Description = "兼容 OptiFine 光影包的高性能光影加载器。",
+            Dependencies = ["Sodium"],
+            Side = ModSide.Client,
+            IsEnabledByDefault = false,
+        },
+        new()
+        {
+            Id = "xaeros-minimap",
+            Name = "Xaero's Minimap",
+            Author = "xaero96",
+            Version = "24.6.1",
+            UpdateVersion = "24.7.0",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "xaeros_minimap_24.6.1_Fabric_1.21.jar",
+            SizeKb = 1960,
+            Description = "可自定义的小地图，支持路径点、实体雷达与洞穴模式。",
+            Dependencies = [],
+            Side = ModSide.Client,
+        },
+        new()
+        {
+            Id = "terralith",
+            Name = "Terralith",
+            Author = "Stardust Labs",
+            Version = "2.5.4",
+            Loader = "Fabric",
+            GameVersion = "1.21.4",
+            FileName = "Terralith_1.21.4_v2.5.4.jar",
+            SizeKb = 5240,
+            Description = "使用原版方块生成的全新地形，新增上百种生物群系。",
+            Dependencies = [],
+            Side = ModSide.Both,
+            IsEnabledByDefault = false,
+        },
+    ];
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<ModEntry>> GetModsAsync(string instanceId, CancellationToken cancellationToken = default)
+        => Task.FromResult(Mods);
+
     /// <inheritdoc />
     public Task<IReadOnlyList<DownloadItem>> GetDownloadItemsAsync(CancellationToken cancellationToken = default)
         => Task.FromResult(DownloadItems);

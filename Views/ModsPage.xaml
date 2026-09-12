@@ -5,13 +5,287 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:WINUI.ViewModels"
     mc:Ignorable="d">
 
-    <Grid Padding="{StaticResource PagePadding}">
-        <StackPanel Spacing="{StaticResource SpaceSm}">
-            <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="模组" />
-            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="管理已安装的模组与资源包。" />
-            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="占位页 · 将在「核心页面」阶段实现" />
-        </StackPanel>
+    <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 页头 -->
+        <Grid Grid.Row="0" ColumnSpacing="{StaticResource SpaceLg}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="模组" />
+                <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="按实例管理模组：启用 / 禁用、检查更新与查看依赖。" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="{StaticResource SpaceSm}">
+                <Button Command="{x:Bind ViewModel.CheckUpdatesCommand}" Content="检查更新" />
+                <Button Command="{x:Bind ViewModel.OpenModsFolderCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                        <FontIcon
+                            FontFamily="{StaticResource AppIconFontFamily}"
+                            FontSize="14"
+                            Glyph="{StaticResource IconFolderGlyph}" />
+                        <TextBlock VerticalAlignment="Center" Text="打开目录" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- 工具栏 -->
+        <Grid Grid.Row="1" ColumnSpacing="{StaticResource SpaceMd}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ComboBox
+                Grid.Column="0"
+                MinWidth="280"
+                DisplayMemberPath="DisplayName"
+                Header="实例"
+                ItemsSource="{x:Bind ViewModel.Instances}"
+                SelectedItem="{x:Bind ViewModel.SelectedInstance, Mode=TwoWay}" />
+            <AutoSuggestBox
+                Grid.Column="1"
+                MaxWidth="340"
+                HorizontalAlignment="Left"
+                Header="搜索"
+                PlaceholderText="模组名、作者或简介"
+                QueryIcon="Find"
+                TextChanged="OnSearchBoxTextChanged" />
+            <ComboBox
+                Grid.Column="2"
+                MinWidth="150"
+                DisplayMemberPath="DisplayName"
+                Header="筛选"
+                ItemsSource="{x:Bind ViewModel.Filters}"
+                SelectedItem="{x:Bind ViewModel.SelectedFilter, Mode=TwoWay}" />
+        </Grid>
+
+        <!-- 主体：模组列表 + 详情 -->
+        <Grid Grid.Row="2" ColumnSpacing="{StaticResource SpaceLg}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="340" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <ListView
+                    ItemsSource="{x:Bind ViewModel.Mods}"
+                    SelectedItem="{x:Bind ViewModel.SelectedMod, Mode=TwoWay}"
+                    SelectionMode="Single">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="MinHeight" Value="0" />
+                            <Setter Property="Padding" Value="12" />
+                            <Setter Property="Margin" Value="0,0,0,4" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:ModItemViewModel">
+                            <Grid ColumnSpacing="{StaticResource SpaceMd}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                            Style="{StaticResource AppBodyTextStyle}"
+                                            Text="{x:Bind Entry.Name}" />
+                                        <Border Style="{StaticResource AppBadgeStyle}">
+                                            <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind Entry.VersionLabel}" />
+                                        </Border>
+                                        <Border Style="{StaticResource AppBadgeStyle}">
+                                            <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind Entry.SideLabel}" />
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock
+                                        MaxLines="1"
+                                        Style="{StaticResource AppCaptionTextStyle}"
+                                        Text="{x:Bind Entry.Description}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                        <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind Entry.Author}" />
+                                        <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="·" />
+                                        <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind Entry.TargetSummary}" />
+                                        <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="·" />
+                                        <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind Entry.SizeLabel}" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <ToggleSwitch
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                                    OffContent=""
+                                    OnContent="" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <!-- 空状态 -->
+                <StackPanel
+                    MaxWidth="360"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="{StaticResource SpaceSm}"
+                    Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource AppSectionTitleStyle}"
+                        Text="没有匹配的模组" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        TextAlignment="Center"
+                        Style="{StaticResource AppCaptionTextStyle}"
+                        Text="试试更换实例、筛选条件或调整搜索关键字。" />
+                </StackPanel>
+            </Grid>
+
+            <!-- 详情面板 -->
+            <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
+                <Grid>
+                    <StackPanel Spacing="{StaticResource SpaceMd}" Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
+                        <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="模组详情" />
+
+                        <StackPanel Spacing="{StaticResource SpaceXs}">
+                            <TextBlock
+                                Style="{StaticResource AppSectionTitleStyle}"
+                                Text="{x:Bind ViewModel.SelectedMod.Entry.Name, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.SelectedMod.Entry.Author, Mode=OneWay}" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                            <Border Style="{StaticResource AppBadgeStyle}">
+                                <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ViewModel.SelectedMod.Entry.VersionLabel, Mode=OneWay}" />
+                            </Border>
+                            <Border Style="{StaticResource AppBadgeStyle}">
+                                <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ViewModel.SelectedMod.Entry.SideLabel, Mode=OneWay}" />
+                            </Border>
+                            <Border Style="{StaticResource AppBadgeStyle}">
+                                <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ViewModel.SelectedMod.Entry.SizeLabel, Mode=OneWay}" />
+                            </Border>
+                        </StackPanel>
+
+                        <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="{x:Bind ViewModel.SelectedMod.Entry.Description, Mode=OneWay}" />
+
+                        <StackPanel Spacing="{StaticResource SpaceXs}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="适配" />
+                            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="{x:Bind ViewModel.SelectedMod.Entry.TargetSummary, Mode=OneWay}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="{StaticResource SpaceXs}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="依赖" />
+                            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="{x:Bind ViewModel.SelectedMod.Entry.DependencySummary, Mode=OneWay}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="{StaticResource SpaceXs}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="文件" />
+                            <TextBlock
+                                FontFamily="{StaticResource AppMonoFontFamily}"
+                                FontSize="{StaticResource FontSizeCaption}"
+                                Foreground="{ThemeResource AppTextSecondaryBrush}"
+                                Text="{x:Bind ViewModel.SelectedMod.Entry.FileName, Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="{StaticResource SpaceSm}"
+                            Visibility="{x:Bind ViewModel.SelectedMod.Entry.HasUpdate, Mode=OneWay}">
+                            <Button
+                                Padding="12,6"
+                                FontSize="{StaticResource FontSizeCaption}"
+                                Style="{StaticResource AppAccentButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceXs}">
+                                    <FontIcon
+                                        FontFamily="{StaticResource AppIconFontFamily}"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource AppAccentTextBrush}"
+                                        Glyph="{StaticResource IconDownloadGlyph}" />
+                                    <TextBlock VerticalAlignment="Center" Text="更新到此版本" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Style="{StaticResource AppCaptionTextStyle}"
+                                Text="（演示）" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel
+                        MaxWidth="240"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="{StaticResource SpaceXs}"
+                        Visibility="{x:Bind ViewModel.HasNoSelection, Mode=OneWay}">
+                        <FontIcon
+                            HorizontalAlignment="Center"
+                            FontFamily="{StaticResource AppIconFontFamily}"
+                            FontSize="28"
+                            Foreground="{ThemeResource AppTextTertiaryBrush}"
+                            Glyph="{StaticResource IconListGlyph}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            TextAlignment="Center"
+                            Style="{StaticResource AppCaptionTextStyle}"
+                            Text="从左侧选择一个模组查看详情。" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 状态栏 -->
+        <Grid Grid.Row="3" ColumnSpacing="{StaticResource SpaceMd}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                <Ellipse
+                    Width="8"
+                    Height="8"
+                    VerticalAlignment="Center"
+                    Fill="{ThemeResource AppAccentBrush}" />
+                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Spacing="{StaticResource SpaceSm}">
+                <Button
+                    Padding="12,4"
+                    Command="{x:Bind ViewModel.EnableAllCommand}"
+                    Content="全部启用"
+                    FontSize="{StaticResource FontSizeCaption}" />
+                <Button
+                    Padding="12,4"
+                    Command="{x:Bind ViewModel.DisableAllCommand}"
+                    Content="全部禁用"
+                    FontSize="{StaticResource FontSizeCaption}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Style="{StaticResource AppCaptionTextStyle}"
+                    Text="{x:Bind ViewModel.Summary, Mode=OneWay}" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

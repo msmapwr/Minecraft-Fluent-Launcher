@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ④-4｜模组管理页**：`Views/ModsPage` 由占位页重做为模组管理器（Mock 数据）。
+  - 工具栏：实例选择、搜索（名称 / 作者 / 简介）、筛选（全部 / 已启用 / 已禁用 / 可更新）。
+  - 主体：`ListView` 模组列表，每行含名称、版本、运行侧与依赖概览、作者 / 加载器 / 体积，以及启用开关（TwoWay）；切换开关会即时更新统计，并在「已启用 / 已禁用」筛选下同步刷新列表。
+  - 侧栏：模组详情面板（作者、版本、运行侧、体积、简介、适配、依赖、文件名与更新入口），未选中时显示引导提示。
+  - 页头提供「检查更新 / 打开目录」，底部提供「全部启用 / 全部禁用」与统计摘要。全部操作均为演示，**不改动任何 .jar 文件**。
+- 新增模型 `Models/ModEntry`、`Models/ModFilter`、`Models/ModSide` 及标签扩展；新增 `ViewModels/ModItemViewModel`。
+- 新增视图模型 `ViewModels/ModsPageViewModel`；`ILauncherDataService` 增加 `GetModsAsync`。
 - **大更新 ④-3｜下载中心页**：`Views/DownloadsPage` 由占位页重做为下载中心（Mock 数据）。
   - 工具栏：搜索（名称 / 作者 / 简介）、分类（全部 / 游戏版本 / 加载器 / 模组 / 资源包 / 光影 / 整合包 / 地图存档）、下载源（官方 / BMCLAPI / 社区镜像）与刷新。
   - 主体：`ItemsRepeater` + `StackLayout` 条目列表，含名称、分类与安装状态徽章、简介、作者 / 版本 / 体积 / 下载次数，以及「下载」按钮。

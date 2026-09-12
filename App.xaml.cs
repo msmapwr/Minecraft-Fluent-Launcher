@@ -52,6 +52,7 @@ namespace WINUI
             services.AddSingleton<LaunchPageViewModel>();
             services.AddSingleton<InstancesPageViewModel>();
             services.AddSingleton<DownloadsPageViewModel>();
+            services.AddSingleton<ModsPageViewModel>();
 
             // Views
             services.AddSingleton<MainWindow>();

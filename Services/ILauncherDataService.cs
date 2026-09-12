@@ -24,6 +24,9 @@ public interface ILauncherDataService
     /// <summary>获取下载中心的可下载条目。</summary>
     Task<IReadOnlyList<DownloadItem>> GetDownloadItemsAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>获取指定实例下的模组列表。</summary>
+    Task<IReadOnlyList<ModEntry>> GetModsAsync(string instanceId, CancellationToken cancellationToken = default);
+
     /// <summary>获取新闻与公告。</summary>
     Task<IReadOnlyList<NewsItem>> GetNewsAsync(CancellationToken cancellationToken = default);
 
