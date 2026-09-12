@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish MSIX & portable zip
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Publish self-contained package (x64)
+        run: >
+          dotnet publish WINUI.csproj
+          -c Release
+          -p:Platform=x64
+          -p:RuntimeIdentifierOverride=win-x64
+          -p:SelfContained=true
+          -p:WindowsAppSDKSelfContained=true
+          -p:GenerateAppxPackageOnBuild=true
+          -p:AppxPackageDir="${{ github.workspace }}\msix"
+          -p:UapAppxPackageBuildMode=SideloadOnly
+
+      - name: Locate MSIX
+        id: msix
+        shell: pwsh
+        run: |
+          $msix = Get-ChildItem -Path "${{ github.workspace }}\msix" -Recurse -Filter *.msix | Select-Object -First 1
+          if (-not $msix) { throw "No .msix produced" }
+          "path=$($msix.FullName)" >> $env:GITHUB_OUTPUT
+          "name=$($msix.Name)" >> $env:GITHUB_OUTPUT
+
+      - name: Collect portable zip
+        shell: pwsh
+        run: |
+          $appDir = Get-ChildItem -Path "WINUI\AppPackages" -Recurse -Directory -Filter "*_x64*" | Select-Object -First 1
+          if (-not $appDir) { $appDir = Get-ChildItem -Path "msix" -Recurse -Directory | Where-Object { Get-ChildItem $_ -Filter *.exe -Recurse } | Select-Object -First 1 }
+          if (-not $appDir) { throw "No app output directory found" }
+          Compress-Archive -Path (Join-Path $appDir.FullName '*') -DestinationPath "${{ github.workspace }}\MinecraftFluentLauncher-portable-win-x64.zip" -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            ${{ steps.msix.outputs.path }}
+            MinecraftFluentLauncher-portable-win-x64.zip

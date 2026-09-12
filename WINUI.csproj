@@ -22,6 +22,7 @@
       同时避免单元测试主机加载本程序集时在模块初始化器里抛 REGDB_E_CLASSNOTREG。
     -->
     <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+    <Version>0.1.0</Version>
     <Nullable>enable</Nullable>
     <!--
       使用最新 C# 语言版本以启用 partial property：

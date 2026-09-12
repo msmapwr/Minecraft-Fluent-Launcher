@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-13
+
 ### Added
 
 - **大更新 ⑥-1｜核心逻辑单元测试（xUnit）**：新增测试项目 `tests/WINUI.Tests`，覆盖不依赖 UI 线程的纯逻辑，**32 个测试全部通过**。
