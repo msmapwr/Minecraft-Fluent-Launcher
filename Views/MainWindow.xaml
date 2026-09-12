@@ -16,16 +16,19 @@
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Spacing="8">
+            Spacing="{StaticResource SpaceSm}">
             <TextBlock
                 HorizontalAlignment="Center"
-                FontSize="28"
+                FontFamily="{StaticResource AppDisplayFontFamily}"
+                FontSize="{StaticResource FontSizeDisplay}"
                 FontWeight="SemiBold"
+                Foreground="{ThemeResource AppTextPrimaryBrush}"
                 Text="{x:Bind ViewModel.AppTitle, Mode=OneWay}" />
             <TextBlock
                 HorizontalAlignment="Center"
-                FontSize="14"
-                Opacity="0.7"
+                FontFamily="{StaticResource AppFontFamily}"
+                FontSize="{StaticResource FontSizeBody}"
+                Foreground="{ThemeResource AppTextSecondaryBrush}"
                 Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
         </StackPanel>
     </Grid>
