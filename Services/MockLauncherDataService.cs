@@ -488,6 +488,31 @@ public sealed class MockLauncherDataService : ILauncherDataService
         },
     ];
 
+    private static readonly IReadOnlyList<LogEntry> LogEntries =
+    [
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 12, 4, 118, TimeSpan.FromHours(8)), Level = AppLogLevel.Info, Source = "Launcher", Message = "Minecraft Fluent Launcher 0.1.0 启动完成" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 12, 4, 191, TimeSpan.FromHours(8)), Level = AppLogLevel.Info, Source = "Settings", Message = "已从 settings.json 载入设置（主题 = 跟随系统）" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 12, 4, 233, TimeSpan.FromHours(8)), Level = AppLogLevel.Debug, Source = "Theme", Message = "根元素 RequestedTheme 已应用为 Default" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 12, 5, 42, TimeSpan.FromHours(8)), Level = AppLogLevel.Info, Source = "Java", Message = "检测到 Java 21.0.4（C:\\Program Files\\Java\\jdk-21\\bin\\javaw.exe）" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 12, 5, 96, TimeSpan.FromHours(8)), Level = AppLogLevel.Warning, Source = "Java", Message = "未检测到 Java 17，1.17 及以下版本将无法启动" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 13, 11, 507, TimeSpan.FromHours(8)), Level = AppLogLevel.Info, Source = "Versions", Message = "已加载 8 个版本条目，其中 3 个为本地已安装" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 13, 12, 8, TimeSpan.FromHours(8)), Level = AppLogLevel.Debug, Source = "Instances", Message = "扫描实例目录，发现 6 个实例" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 14, 30, 664, TimeSpan.FromHours(8)), Level = AppLogLevel.Error, Source = "Download", Message = "下载 resources.download.minecraft.net 超时，已回退到 BMCLAPI 镜像" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 14, 31, 12, TimeSpan.FromHours(8)), Level = AppLogLevel.Info, Source = "Download", Message = "已切换下载源：官方源 → BMCLAPI 镜像" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 15, 2, 330, TimeSpan.FromHours(8)), Level = AppLogLevel.Info, Source = "Assets", Message = "缺失资源 3 项，已加入下载队列" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 15, 48, 902, TimeSpan.FromHours(8)), Level = AppLogLevel.Info, Source = "Assets", Message = "资源校验完成（3/3），耗时 46.5 秒" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 15, 49, 41, TimeSpan.FromHours(8)), Level = AppLogLevel.Debug, Source = "Launch", Message = "构建启动参数：-Xmx4096M -Xms1024M -Djava.library.path=…" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 15, 50, 118, TimeSpan.FromHours(8)), Level = AppLogLevel.Error, Source = "Launch", Message = "java.lang.NoClassDefFoundError: com/example/OptimizationCore（模组 OptimizationCore 与本版本不兼容）" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 15, 50, 205, TimeSpan.FromHours(8)), Level = AppLogLevel.Warning, Source = "Mods", Message = "已自动禁用 1 个不兼容模组，请前往模组页确认" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 16, 3, 771, TimeSpan.FromHours(8)), Level = AppLogLevel.Info, Source = "Launch", Message = "游戏进程已启动（PID 18344），用时 14.8 秒" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 20, 16, 3, 812, TimeSpan.FromHours(8)), Level = AppLogLevel.Trace, Source = "Launch", Message = "标准输出管道已连接，开始转发日志" },
+        new() { Timestamp = new DateTimeOffset(2026, 1, 8, 21, 42, 55, 640, TimeSpan.FromHours(8)), Level = AppLogLevel.Info, Source = "Launch", Message = "游戏进程已退出，退出码 0，本次会话 1 小时 26 分" },
+    ];
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<LogEntry>> GetLogEntriesAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(LogEntries);
+
     /// <inheritdoc />
     public Task<IReadOnlyList<OfflineAccount>> GetOfflineAccountsAsync(CancellationToken cancellationToken = default)
         => Task.FromResult(OfflineAccounts);

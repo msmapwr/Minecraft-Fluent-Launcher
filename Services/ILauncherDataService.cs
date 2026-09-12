@@ -35,4 +35,7 @@ public interface ILauncherDataService
 
     /// <summary>获取已保存的离线账户列表。</summary>
     Task<IReadOnlyList<OfflineAccount>> GetOfflineAccountsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>获取启动器日志。</summary>
+    Task<IReadOnlyList<LogEntry>> GetLogEntriesAsync(CancellationToken cancellationToken = default);
 }

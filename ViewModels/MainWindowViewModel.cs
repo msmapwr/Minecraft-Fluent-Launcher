@@ -34,7 +34,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         _themeService = themeService;
 
-        AppTitle = "Minecraft Fluent Launcher";
+        AppTitle = AppInfo.DisplayName;
 
         // 与已保存的主题偏好保持一致。
         SelectedThemeOption = ThemeOptions.First(option => option.Value == themeService.Current);

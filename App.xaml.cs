@@ -43,6 +43,7 @@ namespace WINUI
             services.AddSingleton<ISettingsService, JsonSettingsService>();
             services.AddSingleton<IThemeService, ThemeService>();
             services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<IClipboardService, ClipboardService>();
 
             // 数据来源：UI 阶段使用 Mock 实现，接入真实启动核心时替换此处注册即可。
             services.AddSingleton<ILauncherDataService, MockLauncherDataService>();
@@ -55,6 +56,8 @@ namespace WINUI
             services.AddSingleton<ModsPageViewModel>();
             services.AddSingleton<AccountsPageViewModel>();
             services.AddSingleton<SettingsPageViewModel>();
+            services.AddSingleton<LogsPageViewModel>();
+            services.AddSingleton<AboutPageViewModel>();
 
             // Views
             services.AddSingleton<MainWindow>();

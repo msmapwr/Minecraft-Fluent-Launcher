@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ④-7｜日志页与关于页**：`Views/LogsPage`、`Views/AboutPage` 由占位页重做。
+  - 日志页：级别门槛筛选（全部 / 调试及以上 / 常规及以上 / 警告及以上 / 仅错误）、关键字搜索、自动滚动开关；固定列宽的时间 / 级别徽章 / 来源 / 消息四列布局，错误与警告带颜色指示点；支持复制当前日志（**真实剪贴板**）、清空视图与重新载入。
+  - 关于页：产品卡（图标、版本、阶段、版权、简介）、技术栈卡、当前阶段说明卡；侧栏含运行环境（操作系统 / .NET 运行时 / 进程架构 / 数据目录，均为真实取值）与「复制环境信息」、链接卡与致谢卡。
+- 新增 `Models/AppInfo`（集中定义产品名、版本、技术栈与运行环境描述）与 `Models/LogEntry`；`AppLogLevelExtensions` 增加短标签。
+- 新增服务 `Services/IClipboardService` / `Services/ClipboardService`（封装系统剪贴板，失败时返回 `false` 而不抛出）。
+- 新增视图模型 `ViewModels/LogsPageViewModel`、`ViewModels/AboutPageViewModel`；`ILauncherDataService` 增加 `GetLogEntriesAsync`。
+- `MainWindowViewModel` 的标题改为引用 `AppInfo.DisplayName`。
 - **大更新 ④-6｜设置页**：`Views/SettingsPage` 由占位页重做为设置中心，**接入真实持久化**。
   - 分组：外观（主题 / 界面语言 / 界面动画 / 显示快照版本）、启动器行为（启动时检查更新 / 启动游戏后关闭启动器）、Java 运行时（自动检测 / 指定路径 / 默认最小与最大内存）、下载（下载源 / 最大并发数）、诊断（日志级别）、数据（数据目录、打开目录、恢复默认设置）。
   - 所有开关与下拉改动都会立即写入 `%LOCALAPPDATA%\MinecraftFluentLauncher\settings.json` 并在下次启动恢复；最大内存自动不小于最小内存。

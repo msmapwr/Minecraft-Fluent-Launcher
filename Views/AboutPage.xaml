@@ -7,11 +7,197 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Padding="{StaticResource PagePadding}">
-        <StackPanel Spacing="{StaticResource SpaceSm}">
+    <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 页头 -->
+        <StackPanel Grid.Row="0" Spacing="{StaticResource SpaceXs}">
             <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="关于" />
-            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="版本信息、开源许可与致谢。" />
-            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="占位页 · 将在「核心页面」阶段实现" />
+            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="版本信息、运行环境与技术栈。" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
+            <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="360" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 主列 -->
+                <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceLg}">
+
+                    <!-- 产品 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceLg}">
+                                <Image
+                                    Width="64"
+                                    Height="64"
+                                    VerticalAlignment="Top"
+                                    Source="ms-appx:///Assets/AppIcon.png" />
+                                <StackPanel VerticalAlignment="Center" Spacing="{StaticResource SpaceXs}">
+                                    <TextBlock Style="{StaticResource AppSectionTitleStyle}" Text="{x:Bind ViewModel.DisplayName}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                        <Border Style="{StaticResource AppBadgeAccentStyle}">
+                                            <TextBlock Style="{StaticResource AppBadgeAccentTextStyle}" Text="{x:Bind ViewModel.Version}" />
+                                        </Border>
+                                        <Border Style="{StaticResource AppBadgeStyle}">
+                                            <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ViewModel.ReleaseStage}" />
+                                        </Border>
+                                        <Border Style="{StaticResource AppBadgeStyle}">
+                                            <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ViewModel.ShortName}" />
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.Copyright}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="{x:Bind ViewModel.Description}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 技术栈 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <TextBlock Style="{StaticResource AppSectionTitleStyle}" Text="技术栈" />
+
+                            <StackPanel Spacing="{StaticResource SpaceXs}">
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="UI 框架" />
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="{x:Bind ViewModel.UiFramework}" />
+                            </StackPanel>
+
+                            <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                            <StackPanel Spacing="{StaticResource SpaceXs}">
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="目标框架" />
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="{x:Bind ViewModel.TargetFramework}" />
+                            </StackPanel>
+
+                            <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                            <StackPanel Spacing="{StaticResource SpaceXs}">
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="架构与依赖" />
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="{x:Bind ViewModel.Architecture}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 说明 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceSm}">
+                            <TextBlock Style="{StaticResource AppSectionTitleStyle}" Text="当前阶段" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="· 界面优先：设计系统、导航外壳与八个核心页面已就位。" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="· 页面数据多为演示数据，尚未接入下载、认证与 JVM 启动核心。" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="· 主题、语言与其它偏好已真实持久化到本地设置文件。" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- 侧列 -->
+                <StackPanel Grid.Column="1" Spacing="{StaticResource SpaceLg}">
+
+                    <!-- 运行环境 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="运行环境" />
+
+                            <StackPanel Spacing="{StaticResource SpaceXs}">
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="操作系统" />
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="{x:Bind ViewModel.OperatingSystem}" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="{StaticResource SpaceXs}">
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text=".NET 运行时" />
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="{x:Bind ViewModel.DotNetRuntime}" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="{StaticResource SpaceXs}">
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="进程架构" />
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="{x:Bind ViewModel.ProcessArchitecture}" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="{StaticResource SpaceXs}">
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="数据目录" />
+                                <TextBlock
+                                    FontFamily="{StaticResource AppMonoFontFamily}"
+                                    FontSize="{StaticResource FontSizeCaption}"
+                                    Foreground="{ThemeResource AppTextSecondaryBrush}"
+                                    Text="{x:Bind ViewModel.DataDirectory}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Command="{x:Bind ViewModel.CopyEnvironmentInfoCommand}"
+                                Content="复制环境信息"
+                                Style="{StaticResource AppAccentButtonStyle}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 链接 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="链接" />
+
+                            <StackPanel Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="项目主页 / 问题反馈" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="仓库地址尚未配置，配置后此处将显示可点击的链接。" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                <Button Command="{x:Bind ViewModel.OpenProjectPageCommand}" Content="项目主页" />
+                                <Button Command="{x:Bind ViewModel.OpenDataDirectoryCommand}" Content="数据目录" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 致谢 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceSm}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="致谢" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="Minecraft 是 Mojang Studios 的商标。本项目为非官方工具，与 Mojang 及微软无关联。" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- 状态栏 -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+            <Ellipse
+                Width="8"
+                Height="8"
+                VerticalAlignment="Center"
+                Fill="{ThemeResource AppAccentBrush}" />
+            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
         </StackPanel>
     </Grid>
 </Page>

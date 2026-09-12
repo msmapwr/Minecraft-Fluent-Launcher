@@ -5,13 +5,198 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:WINUI.Models"
     mc:Ignorable="d">
 
-    <Grid Padding="{StaticResource PagePadding}">
-        <StackPanel Spacing="{StaticResource SpaceSm}">
-            <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="日志" />
-            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="查看启动器与游戏运行日志。" />
-            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="占位页 · 将在「核心页面」阶段实现" />
-        </StackPanel>
+    <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 页头 -->
+        <Grid Grid.Row="0" ColumnSpacing="{StaticResource SpaceLg}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="日志" />
+                <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="查看启动器与游戏运行日志，可复制后用于反馈问题。" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="{StaticResource SpaceSm}">
+                <Button Command="{x:Bind ViewModel.CopyAllCommand}" Content="复制日志" />
+                <Button Command="{x:Bind ViewModel.OpenLogFolderCommand}" Content="打开日志目录" />
+                <Button Command="{x:Bind ViewModel.ClearCommand}" Content="清空" />
+            </StackPanel>
+        </Grid>
+
+        <!-- 工具栏 -->
+        <Grid Grid.Row="1" ColumnSpacing="{StaticResource SpaceMd}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <AutoSuggestBox
+                Grid.Column="0"
+                MaxWidth="360"
+                HorizontalAlignment="Left"
+                Header="搜索"
+                PlaceholderText="消息或来源模块"
+                QueryIcon="Find"
+                TextChanged="OnSearchBoxTextChanged" />
+            <ComboBox
+                Grid.Column="1"
+                MinWidth="160"
+                DisplayMemberPath="DisplayName"
+                Header="级别"
+                ItemsSource="{x:Bind ViewModel.Levels}"
+                SelectedItem="{x:Bind ViewModel.SelectedLevel, Mode=TwoWay}" />
+            <StackPanel
+                Grid.Column="2"
+                VerticalAlignment="Bottom"
+                Orientation="Horizontal"
+                Spacing="{StaticResource SpaceSm}">
+                <ToggleSwitch
+                    Header="自动滚动"
+                    IsOn="{x:Bind ViewModel.AutoScroll, Mode=TwoWay}"
+                    OffContent=""
+                    OnContent="" />
+                <Button Command="{x:Bind ViewModel.RefreshCommand}" VerticalAlignment="Center">
+                    <FontIcon
+                        FontFamily="{StaticResource AppIconFontFamily}"
+                        FontSize="14"
+                        Glyph="{StaticResource IconRefreshGlyph}" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- 日志列表 -->
+        <Border Grid.Row="2" Style="{StaticResource AppCardStyle}" Padding="0">
+            <Grid>
+                <ListView
+                    x:Name="LogList"
+                    ItemsSource="{x:Bind ViewModel.Entries}"
+                    SelectionMode="None">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="MinHeight" Value="0" />
+                            <Setter Property="Padding" Value="12,6" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:LogEntry">
+                            <Grid ColumnSpacing="{StaticResource SpaceSm}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="92" />
+                                    <ColumnDefinition Width="118" />
+                                    <ColumnDefinition Width="92" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppMonoFontFamily}"
+                                    FontSize="{StaticResource FontSizeCaption}"
+                                    Foreground="{ThemeResource AppTextTertiaryBrush}"
+                                    Text="{x:Bind TimeLabel}" />
+
+                                <StackPanel
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="{StaticResource SpaceXs}">
+                                    <Ellipse
+                                        Width="8"
+                                        Height="8"
+                                        VerticalAlignment="Center"
+                                        Fill="{ThemeResource AppErrorBrush}"
+                                        Visibility="{x:Bind IsError}" />
+                                    <Ellipse
+                                        Width="8"
+                                        Height="8"
+                                        VerticalAlignment="Center"
+                                        Fill="{ThemeResource AppWarningBrush}"
+                                        Visibility="{x:Bind IsWarning}" />
+                                    <Ellipse
+                                        Width="8"
+                                        Height="8"
+                                        VerticalAlignment="Center"
+                                        Fill="{ThemeResource AppTextTertiaryBrush}"
+                                        Visibility="{x:Bind IsInformational}" />
+                                    <Border Style="{StaticResource AppBadgeStyle}">
+                                        <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind LevelShortLabel}" />
+                                    </Border>
+                                </StackPanel>
+
+                                <TextBlock
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppMonoFontFamily}"
+                                    FontSize="{StaticResource FontSizeCaption}"
+                                    Foreground="{ThemeResource AppTextSecondaryBrush}"
+                                    Text="{x:Bind Source}"
+                                    TextTrimming="CharacterEllipsis" />
+
+                                <TextBlock
+                                    Grid.Column="3"
+                                    VerticalAlignment="Center"
+                                    FontSize="{StaticResource FontSizeCaption}"
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Text="{x:Bind Message}"
+                                    TextWrapping="Wrap" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <!-- 空状态 -->
+                <StackPanel
+                    MaxWidth="360"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="{StaticResource SpaceXs}"
+                    Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource AppSectionTitleStyle}"
+                        Text="没有可显示的日志" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        TextAlignment="Center"
+                        Style="{StaticResource AppCaptionTextStyle}"
+                        Text="试试放宽级别门槛或清空搜索关键字。" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 状态栏 -->
+        <Grid Grid.Row="3" ColumnSpacing="{StaticResource SpaceMd}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                <Ellipse
+                    Width="8"
+                    Height="8"
+                    VerticalAlignment="Center"
+                    Fill="{ThemeResource AppAccentBrush}" />
+                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+            </StackPanel>
+            <TextBlock
+                Grid.Column="1"
+                Style="{StaticResource AppCaptionTextStyle}"
+                Text="{x:Bind ViewModel.Summary, Mode=OneWay}" />
+        </Grid>
     </Grid>
 </Page>
