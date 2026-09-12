@@ -5,13 +5,258 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:WINUI.Models"
     mc:Ignorable="d">
 
-    <Grid Padding="{StaticResource PagePadding}">
-        <StackPanel Spacing="{StaticResource SpaceSm}">
+    <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 页头 -->
+        <StackPanel Grid.Row="0" Spacing="{StaticResource SpaceXs}">
             <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="账户" />
-            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="管理离线账号与微软账号。" />
-            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="占位页 · 将在「核心页面」阶段实现" />
+            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="使用微软正版账户，或创建仅本地有效的离线账户。" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
+            <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="360" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 主列 -->
+                <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceLg}">
+
+                    <!-- 微软账户 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="微软账户（正版）" />
+
+                            <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceSm}">
+                                    <TextBlock
+                                        Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                        Style="{StaticResource AppBodyTextStyle}"
+                                        Text="登录微软账户后可访问正版验证服务器，并使用官方皮肤与披风。" />
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                        <Border Style="{StaticResource AppBadgeStyle}">
+                                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceXs}">
+                                                <Ellipse
+                                                    Width="8"
+                                                    Height="8"
+                                                    VerticalAlignment="Center"
+                                                    Fill="{ThemeResource AppSuccessBrush}"
+                                                    Visibility="{x:Bind ViewModel.IsMicrosoftSignedIn, Mode=OneWay}" />
+                                                <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ViewModel.MicrosoftStateLabel, Mode=OneWay}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="{StaticResource SpaceSm}">
+                                    <Button
+                                        Command="{x:Bind ViewModel.SignInMicrosoftCommand}"
+                                        Content="使用微软账户登录"
+                                        IsEnabled="{x:Bind ViewModel.IsSignInEnabled, Mode=OneWay}"
+                                        Style="{StaticResource AppAccentButtonStyle}"
+                                        Visibility="{x:Bind ViewModel.IsMicrosoftSignedOut, Mode=OneWay}" />
+                                    <Button
+                                        Command="{x:Bind ViewModel.SignOutMicrosoftCommand}"
+                                        Content="注销"
+                                        Visibility="{x:Bind ViewModel.IsMicrosoftSignedIn, Mode=OneWay}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <ProgressBar
+                                IsIndeterminate="True"
+                                Visibility="{x:Bind ViewModel.IsSigningIn, Mode=OneWay}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 离线账户 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="离线账户" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="离线账户仅用于本地单人游戏与局域网联机，无法加入正版验证服务器。" />
+
+                            <Grid ColumnSpacing="{StaticResource SpaceSm}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox
+                                    Grid.Column="0"
+                                    MaxLength="16"
+                                    PlaceholderText="输入玩家名（最多 16 个字符）"
+                                    Text="{x:Bind ViewModel.NewOfflineName, Mode=TwoWay}" />
+                                <Button
+                                    Grid.Column="1"
+                                    Command="{x:Bind ViewModel.AddOfflineAccountCommand}"
+                                    Content="添加账户" />
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.OfflineAccounts}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:OfflineAccount">
+                                        <Grid Padding="0,10" ColumnSpacing="{StaticResource SpaceMd}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <PersonPicture
+                                                Grid.Column="0"
+                                                Width="36"
+                                                Height="36"
+                                                Initials="{x:Bind Initials}" />
+
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Spacing="{StaticResource SpaceXs}">
+                                                <TextBlock
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                                    Style="{StaticResource AppBodyTextStyle}"
+                                                    Text="{x:Bind Name}" />
+                                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                                    <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind LastUsedLabel}" />
+                                                    <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="·" />
+                                                    <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind CreatedAtLabel}" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <StackPanel
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal"
+                                                Spacing="{StaticResource SpaceSm}">
+                                                <Button
+                                                    Padding="12,6"
+                                                    Click="OnUseOfflineClick"
+                                                    Content="使用"
+                                                    FontSize="{StaticResource FontSizeCaption}"
+                                                    Tag="{x:Bind}" />
+                                                <Button
+                                                    Padding="12,6"
+                                                    Click="OnRemoveOfflineClick"
+                                                    FontSize="{StaticResource FontSizeCaption}"
+                                                    Tag="{x:Bind}">
+                                                    <FontIcon
+                                                        FontFamily="{StaticResource AppIconFontFamily}"
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource AppErrorBrush}"
+                                                        Glyph="{StaticResource IconDeleteGlyph}" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock
+                                Style="{StaticResource AppCaptionTextStyle}"
+                                Text="还没有离线账户，输入名称后点击「添加账户」。"
+                                Visibility="{x:Bind ViewModel.IsOfflineListEmpty, Mode=OneWay}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- 侧列 -->
+                <StackPanel Grid.Column="1" Spacing="{StaticResource SpaceLg}">
+
+                    <!-- 当前账户 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="当前账户" />
+
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceMd}">
+                                <PersonPicture
+                                    Width="56"
+                                    Height="56"
+                                    Initials="{x:Bind ViewModel.CurrentAccountInitials, Mode=OneWay}" />
+                                <StackPanel VerticalAlignment="Center" Spacing="{StaticResource SpaceXs}">
+                                    <TextBlock
+                                        FontSize="{StaticResource FontSizeSubtitle}"
+                                        Style="{StaticResource AppSectionTitleStyle}"
+                                        Text="{x:Bind ViewModel.CurrentAccountName, Mode=OneWay}" />
+                                    <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.CurrentAccountType, Mode=OneWay}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                            <Grid ColumnSpacing="{StaticResource SpaceMd}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Column="0"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="本地实例" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="{x:Bind ViewModel.InstanceCountLabel, Mode=OneWay}" />
+                            </Grid>
+
+                            <Grid ColumnSpacing="{StaticResource SpaceMd}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Column="0"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="离线账户" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="{x:Bind ViewModel.OfflineAccountCountLabel, Mode=OneWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 须知 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceSm}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="须知" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="· 登录流程为界面演示，不会打开浏览器，也不会保存任何凭据。" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="· 离线账户的名称会作为游戏内 ID，建议避免使用真实姓名。" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="· 删除离线账户仅移除本地记录，不会影响 Minecraft 安装文件。" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- 状态栏 -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+            <Ellipse
+                Width="8"
+                Height="8"
+                VerticalAlignment="Center"
+                Fill="{ThemeResource AppAccentBrush}" />
+            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
         </StackPanel>
     </Grid>
 </Page>

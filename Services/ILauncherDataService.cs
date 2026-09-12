@@ -32,4 +32,7 @@ public interface ILauncherDataService
 
     /// <summary>获取当前登录的账户。</summary>
     Task<PlayerAccount> GetCurrentAccountAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>获取已保存的离线账户列表。</summary>
+    Task<IReadOnlyList<OfflineAccount>> GetOfflineAccountsAsync(CancellationToken cancellationToken = default);
 }

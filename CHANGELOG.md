@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ④-5｜账户页**：`Views/AccountsPage` 由占位页重做为账户管理页（Mock 数据）。
+  - 微软账户卡片：登录状态徽章、登录 / 注销按钮（按状态互斥显示）、登录进度条；登录流程以 3 段文案模拟授权 → 获取 Xbox Live 凭据 → 获取 Minecraft 档案，**不打开浏览器、不保存凭据**。
+  - 离线账户卡片：名称输入（限 16 字符、去重、空值校验）+ 账户列表（头像、最近使用与创建时间、「使用 / 删除」操作），并含空状态提示。
+  - 侧栏：当前账户卡片（头像、名称、类型、本地实例数与离线账户数）与「须知」说明卡片。
+- 新增模型 `Models/OfflineAccount`；新增视图模型 `ViewModels/AccountsPageViewModel`；`ILauncherDataService` 增加 `GetOfflineAccountsAsync`。
 - **大更新 ④-4｜模组管理页**：`Views/ModsPage` 由占位页重做为模组管理器（Mock 数据）。
   - 工具栏：实例选择、搜索（名称 / 作者 / 简介）、筛选（全部 / 已启用 / 已禁用 / 可更新）。
   - 主体：`ListView` 模组列表，每行含名称、版本、运行侧与依赖概览、作者 / 加载器 / 体积，以及启用开关（TwoWay）；切换开关会即时更新统计，并在「已启用 / 已禁用」筛选下同步刷新列表。

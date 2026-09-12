@@ -467,6 +467,31 @@ public sealed class MockLauncherDataService : ILauncherDataService
         },
     ];
 
+    private static readonly IReadOnlyList<OfflineAccount> OfflineAccounts =
+    [
+        new()
+        {
+            Name = "Steve_CN",
+            CreatedAt = new DateTimeOffset(2024, 3, 12, 10, 0, 0, TimeSpan.FromHours(8)),
+            LastUsedAt = new DateTimeOffset(2024, 11, 24, 20, 30, 0, TimeSpan.FromHours(8)),
+        },
+        new()
+        {
+            Name = "CreativeBuilder",
+            CreatedAt = new DateTimeOffset(2024, 6, 1, 15, 20, 0, TimeSpan.FromHours(8)),
+            LastUsedAt = new DateTimeOffset(2025, 1, 3, 22, 18, 0, TimeSpan.FromHours(8)),
+        },
+        new()
+        {
+            Name = "TestWorld",
+            CreatedAt = new DateTimeOffset(2025, 1, 6, 9, 45, 0, TimeSpan.FromHours(8)),
+        },
+    ];
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<OfflineAccount>> GetOfflineAccountsAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(OfflineAccounts);
+
     /// <inheritdoc />
     public Task<IReadOnlyList<ModEntry>> GetModsAsync(string instanceId, CancellationToken cancellationToken = default)
         => Task.FromResult(Mods);
