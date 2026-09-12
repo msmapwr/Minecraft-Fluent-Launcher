@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ④-2｜实例列表页**：`Views/InstancesPage` 由占位页重做为实例管理页（Mock 数据）。
+  - 工具栏：搜索（实例名 / 版本号 / 加载器）、筛选（全部 / 已安装 / 未安装）、排序（最近游玩 / 名称 / 占用空间），三者均在内存中即时生效。
+  - 主体：`ItemsRepeater` + `UniformGridLayout` 响应式卡片网格；每张卡片含实例图标、名称、最近游玩时间、版本与加载器、通道 / 安装状态 / 占用空间徽章、累计时长，以及「启动 / 目录 / 删除」操作。
+  - 空状态区分「尚无实例」与「无匹配结果」两种文案；底部状态栏显示实时操作反馈与总数摘要。
+- 新增模型 `Models/GameInstance`、`Models/InstanceFilter`、`Models/InstanceSort`、`Models/SelectOption<T>`、`Models/VersionChannelExtensions`。
+- 新增视图模型 `ViewModels/InstancesPageViewModel`；`ILauncherDataService` 增加 `GetInstancesAsync`。
 - **大更新 ④-1｜启动页**：`Views/LaunchPage` 由占位页重做为完整的启动控制台（Mock 数据）。
   - 左列：实例卡片（版本/加载器下拉、加载器/通道/安装状态徽章、发布日期、安装目录）、启动卡片（强调色大按钮 + 分阶段进度条 + 状态行）、运行配置卡片（内存分配滑杆、Java 运行时）。
   - 右列：账户卡片（`PersonPicture` 头像 + 玩家名 + 账户类型）、新闻与公告卡片。

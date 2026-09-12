@@ -5,13 +5,228 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:WINUI.Models"
     mc:Ignorable="d">
 
-    <Grid Padding="{StaticResource PagePadding}">
-        <StackPanel Spacing="{StaticResource SpaceSm}">
-            <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="实例" />
-            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="管理游戏实例与版本。" />
-            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="占位页 · 将在「核心页面」阶段实现" />
+    <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 页头 -->
+        <Grid Grid.Row="0" ColumnSpacing="{StaticResource SpaceLg}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="实例" />
+                <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="管理你的游戏实例：每个实例拥有独立的存档、模组与配置。" />
+            </StackPanel>
+            <Button
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Command="{x:Bind ViewModel.CreateInstanceCommand}"
+                Style="{StaticResource AppAccentButtonStyle}">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                    <FontIcon
+                        FontFamily="{StaticResource AppIconFontFamily}"
+                        FontSize="16"
+                        Foreground="{ThemeResource AppAccentTextBrush}"
+                        Glyph="{StaticResource IconAddGlyph}" />
+                    <TextBlock VerticalAlignment="Center" Text="新建实例" />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- 工具栏：搜索 / 筛选 / 排序 -->
+        <Grid Grid.Row="1" ColumnSpacing="{StaticResource SpaceMd}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <AutoSuggestBox
+                x:Name="SearchBox"
+                Grid.Column="0"
+                MaxWidth="360"
+                HorizontalAlignment="Left"
+                Header="搜索"
+                PlaceholderText="实例名、版本号或加载器"
+                QueryIcon="Find"
+                TextChanged="OnSearchBoxTextChanged" />
+            <ComboBox
+                Grid.Column="1"
+                MinWidth="150"
+                DisplayMemberPath="DisplayName"
+                Header="筛选"
+                ItemsSource="{x:Bind ViewModel.Filters}"
+                SelectedItem="{x:Bind ViewModel.SelectedFilter, Mode=TwoWay}" />
+            <ComboBox
+                Grid.Column="2"
+                MinWidth="150"
+                DisplayMemberPath="DisplayName"
+                Header="排序"
+                ItemsSource="{x:Bind ViewModel.Sorts}"
+                SelectedItem="{x:Bind ViewModel.SelectedSort, Mode=TwoWay}" />
+        </Grid>
+
+        <!-- 实例网格 -->
+        <Grid Grid.Row="2">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Instances}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MinColumnSpacing="{StaticResource SpaceMd}"
+                            MinItemHeight="204"
+                            MinItemWidth="308"
+                            MinRowSpacing="{StaticResource SpaceMd}" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:GameInstance">
+                            <Border Style="{StaticResource AppCardStyle}">
+                                <Grid RowSpacing="{StaticResource SpaceSm}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- 标题行 -->
+                                    <Grid Grid.Row="0" ColumnSpacing="{StaticResource SpaceMd}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border
+                                            Width="40"
+                                            Height="40"
+                                            Background="{ThemeResource AppSurfaceAltBrush}"
+                                            CornerRadius="{StaticResource RadiusMd}">
+                                            <FontIcon
+                                                FontFamily="{StaticResource AppIconFontFamily}"
+                                                FontSize="20"
+                                                Foreground="{ThemeResource AppAccentBrush}"
+                                                Glyph="{StaticResource IconLibraryGlyph}" />
+                                        </Border>
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Spacing="{StaticResource SpaceXs}">
+                                            <TextBlock
+                                                FontSize="{StaticResource FontSizeBody}"
+                                                Style="{StaticResource AppSectionTitleStyle}"
+                                                Text="{x:Bind Name}" />
+                                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind LastPlayedLabel}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- 信息区 -->
+                                    <StackPanel Grid.Row="1" Spacing="{StaticResource SpaceSm}">
+                                        <TextBlock
+                                            Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                            Style="{StaticResource AppBodyTextStyle}"
+                                            Text="{x:Bind VersionSummary}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                            <Border Style="{StaticResource AppBadgeStyle}">
+                                                <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ChannelLabel}" />
+                                            </Border>
+                                            <Border Style="{StaticResource AppBadgeStyle}">
+                                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceXs}">
+                                                    <Ellipse
+                                                        Width="8"
+                                                        Height="8"
+                                                        VerticalAlignment="Center"
+                                                        Fill="{ThemeResource AppSuccessBrush}"
+                                                        Visibility="{x:Bind IsInstalled}" />
+                                                    <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind InstallStateLabel}" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Style="{StaticResource AppBadgeStyle}">
+                                                <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind SizeLabel}" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind PlayTimeLabel}" />
+                                    </StackPanel>
+
+                                    <!-- 操作区 -->
+                                    <StackPanel
+                                        Grid.Row="2"
+                                        Orientation="Horizontal"
+                                        Spacing="{StaticResource SpaceSm}">
+                                        <Button
+                                            Padding="12,6"
+                                            Click="OnLaunchClick"
+                                            FontSize="{StaticResource FontSizeCaption}"
+                                            Style="{StaticResource AppAccentButtonStyle}"
+                                            Tag="{x:Bind}">
+                                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceXs}">
+                                                <FontIcon
+                                                    FontFamily="{StaticResource AppIconFontFamily}"
+                                                    FontSize="12"
+                                                    Foreground="{ThemeResource AppAccentTextBrush}"
+                                                    Glyph="{StaticResource IconPlayGlyph}" />
+                                                <TextBlock VerticalAlignment="Center" Text="启动" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button
+                                            Padding="12,6"
+                                            Click="OnOpenFolderClick"
+                                            Content="目录"
+                                            FontSize="{StaticResource FontSizeCaption}"
+                                            Tag="{x:Bind}" />
+                                        <Button
+                                            Padding="12,6"
+                                            Click="OnDeleteClick"
+                                            FontSize="{StaticResource FontSizeCaption}"
+                                            Tag="{x:Bind}">
+                                            <FontIcon
+                                                FontFamily="{StaticResource AppIconFontFamily}"
+                                                FontSize="12"
+                                                Foreground="{ThemeResource AppErrorBrush}"
+                                                Glyph="{StaticResource IconDeleteGlyph}" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+
+            <!-- 空状态 -->
+            <StackPanel
+                MaxWidth="360"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="{StaticResource SpaceSm}"
+                Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Style="{StaticResource AppSectionTitleStyle}"
+                    Text="没有可显示的实例" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    TextAlignment="Center"
+                    Style="{StaticResource AppCaptionTextStyle}"
+                    Text="{x:Bind ViewModel.EmptyStateText, Mode=OneWay}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- 状态栏 -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+            <Ellipse
+                Width="8"
+                Height="8"
+                VerticalAlignment="Center"
+                Fill="{ThemeResource AppAccentBrush}" />
+            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="·" />
+            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.Summary, Mode=OneWay}" />
         </StackPanel>
     </Grid>
 </Page>

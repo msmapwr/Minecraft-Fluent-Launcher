@@ -125,9 +125,86 @@ public sealed class MockLauncherDataService : ILauncherDataService
         IsSignedIn = true,
     };
 
+    private static readonly IReadOnlyList<GameInstance> Instances =
+    [
+        new()
+        {
+            Id = "survival-1.21.4-fabric",
+            Name = "生存 · 长期档",
+            GameVersion = "1.21.4",
+            Loader = "Fabric 0.16.9",
+            Channel = VersionChannel.Release,
+            LastPlayedAt = new DateTimeOffset(2025, 1, 8, 21, 42, 0, TimeSpan.FromHours(8)),
+            PlayTime = TimeSpan.FromHours(146.5),
+            SizeGb = 4.82,
+            IsInstalled = true,
+        },
+        new()
+        {
+            Id = "neoforge-1.21.1-modpack",
+            Name = "整合包 · 机械工坊",
+            GameVersion = "1.21.1",
+            Loader = "NeoForge 21.1.72",
+            Channel = VersionChannel.Release,
+            LastPlayedAt = new DateTimeOffset(2025, 1, 6, 19, 5, 0, TimeSpan.FromHours(8)),
+            PlayTime = TimeSpan.FromHours(58.2),
+            SizeGb = 12.34,
+            IsInstalled = true,
+        },
+        new()
+        {
+            Id = "vanilla-1.21.4",
+            Name = "原版 · 纯净",
+            GameVersion = "1.21.4",
+            Loader = "Vanilla",
+            Channel = VersionChannel.Release,
+            LastPlayedAt = new DateTimeOffset(2025, 1, 3, 22, 18, 0, TimeSpan.FromHours(8)),
+            PlayTime = TimeSpan.FromHours(9.4),
+            SizeGb = 1.06,
+            IsInstalled = true,
+        },
+        new()
+        {
+            Id = "forge-1.20.1-old",
+            Name = "怀旧 · 1.20.1 Forge",
+            GameVersion = "1.20.1",
+            Loader = "Forge 47.3.0",
+            Channel = VersionChannel.Release,
+            LastPlayedAt = new DateTimeOffset(2024, 11, 24, 20, 30, 0, TimeSpan.FromHours(8)),
+            PlayTime = TimeSpan.FromHours(31.7),
+            SizeGb = 7.19,
+            IsInstalled = true,
+        },
+        new()
+        {
+            Id = "snapshot-25w03a",
+            Name = "快照实验 · 25w03a",
+            GameVersion = "25w03a",
+            Loader = "Vanilla",
+            Channel = VersionChannel.Snapshot,
+            PlayTime = TimeSpan.Zero,
+            SizeGb = 0.94,
+        },
+        new()
+        {
+            Id = "legacy-b1.7.3",
+            Name = "远古 · Beta 1.7.3",
+            GameVersion = "b1.7.3",
+            Loader = "Vanilla",
+            Channel = VersionChannel.Legacy,
+            PlayTime = TimeSpan.FromMinutes(42),
+            SizeGb = 0.18,
+            IsInstalled = true,
+        },
+    ];
+
     /// <inheritdoc />
     public Task<IReadOnlyList<GameVersion>> GetVersionsAsync(CancellationToken cancellationToken = default)
         => Task.FromResult(Versions);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<GameInstance>> GetInstancesAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(Instances);
 
     /// <inheritdoc />
     public Task<IReadOnlyList<NewsItem>> GetNewsAsync(CancellationToken cancellationToken = default)

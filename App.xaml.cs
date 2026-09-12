@@ -50,6 +50,7 @@ namespace WINUI
             // ViewModels
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<LaunchPageViewModel>();
+            services.AddSingleton<InstancesPageViewModel>();
 
             // Views
             services.AddSingleton<MainWindow>();

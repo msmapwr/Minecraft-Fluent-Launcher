@@ -30,12 +30,7 @@ public sealed class GameVersion
     public string FullName => $"{DisplayName} · {Loader}";
 
     /// <summary>发布通道的中文标签。</summary>
-    public string ChannelLabel => Channel switch
-    {
-        VersionChannel.Release => "正式版",
-        VersionChannel.Snapshot => "快照",
-        _ => "远古版",
-    };
+    public string ChannelLabel => Channel.ToLabel();
 
     /// <summary>发布日期标签。</summary>
     public string ReleasedAtLabel => ReleasedAt.ToString("yyyy-MM-dd");
