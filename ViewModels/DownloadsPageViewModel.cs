@@ -16,13 +16,23 @@ namespace WINUI.ViewModels;
 /// 条目列表来自 <see cref="ILauncherDataService"/>（Mock）；下载队列为纯 UI 演示，
 /// 以定时递增的进度模拟下载，<b>不会产生任何网络请求，也不会写入磁盘</b>。
 /// </para>
+/// <para>
+/// 列表带分页：可切换每页条数（10 / 20 / 50）并通过数字页码、上一页 / 下一页翻页。
+/// </para>
 /// </summary>
 public sealed partial class DownloadsPageViewModel : ObservableObject
 {
     private readonly ILauncherDataService _dataService;
+    private readonly INavigationService _navigation;
 
-    /// <summary>全量条目（搜索/筛选的数据源）。</summary>
+    /// <summary>全量条目（搜索 / 分类筛选的数据源）。</summary>
     private readonly List<DownloadItem> _allItems = [];
+
+    /// <summary>筛选后的全部条目（分页前）。</summary>
+    private readonly List<DownloadItem> _filteredItems = [];
+
+    /// <summary>批量改页码时抑制重复刷新。</summary>
+    private bool _suppressPageRefresh;
 
     /// <summary>搜索关键字。</summary>
     [ObservableProperty]
@@ -36,6 +46,18 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
     [ObservableProperty]
     public partial SelectOption<DownloadSource> SelectedSource { get; set; }
 
+    /// <summary>每页条数。</summary>
+    [ObservableProperty]
+    public partial SelectOption<int> SelectedPageSize { get; set; }
+
+    /// <summary>当前页码（从 1 开始）。</summary>
+    [ObservableProperty]
+    public partial int CurrentPage { get; set; }
+
+    /// <summary>总页数（至少为 1）。</summary>
+    [ObservableProperty]
+    public partial int TotalPages { get; set; }
+
     /// <summary>是否正在下载。</summary>
     [ObservableProperty]
     public partial bool IsDownloading { get; set; }
@@ -48,8 +70,11 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
     [ObservableProperty]
     public partial string StatusMessage { get; set; }
 
-    /// <summary>筛选后的条目列表。</summary>
+    /// <summary>当前页的条目。</summary>
     public ObservableCollection<DownloadItem> Items { get; } = [];
+
+    /// <summary>分页条上的数字页码。</summary>
+    public ObservableCollection<PageButtonViewModel> PageButtons { get; } = [];
 
     /// <summary>下载队列。</summary>
     public ObservableCollection<DownloadTaskViewModel> Queue { get; } = [];
@@ -58,13 +83,13 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
     public IReadOnlyList<SelectOption<DownloadCategory?>> Categories { get; } =
     [
         new(null, "全部"),
-        new(DownloadCategory.GameVersion, "游戏版本"),
-        new(DownloadCategory.Loader, "模组加载器"),
+        new(DownloadCategory.GameVersion, "版本"),
         new(DownloadCategory.Mod, "模组"),
         new(DownloadCategory.ResourcePack, "资源包"),
         new(DownloadCategory.Shader, "光影"),
+        new(DownloadCategory.World, "世界"),
+        new(DownloadCategory.DataPack, "数据包"),
         new(DownloadCategory.Modpack, "整合包"),
-        new(DownloadCategory.World, "地图存档"),
     ];
 
     /// <summary>可选下载源。</summary>
@@ -75,26 +100,51 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
         new(DownloadSource.Community, "社区镜像"),
     ];
 
-    /// <summary>列表是否为空。</summary>
-    public bool IsEmpty => Items.Count == 0;
+    /// <summary>可选每页条数。</summary>
+    public IReadOnlyList<SelectOption<int>> PageSizes { get; } =
+    [
+        new(10, "每页 10 条"),
+        new(20, "每页 20 条"),
+        new(50, "每页 50 条"),
+    ];
+
+    /// <summary>筛选结果是否为空。</summary>
+    public bool IsEmpty => _filteredItems.Count == 0;
+
+    /// <summary>是否有条目（用于分页条的显示控制）。</summary>
+    public bool HasItems => _filteredItems.Count > 0;
 
     /// <summary>队列是否为空。</summary>
     public bool IsQueueEmpty => Queue.Count == 0;
+
+    /// <summary>是否可以翻到上一页。</summary>
+    public bool CanGoPrevious => CurrentPage > 1;
+
+    /// <summary>是否可以翻到下一页。</summary>
+    public bool CanGoNext => CurrentPage < TotalPages;
+
+    /// <summary>分页摘要。</summary>
+    public string PageSummary => _filteredItems.Count == 0
+        ? "没有条目"
+        : $"第 {CurrentPage} / {TotalPages} 页 · 共 {_filteredItems.Count} 条";
 
     /// <summary>队列摘要。</summary>
     public string QueueSummary => Queue.Count == 0
         ? "队列为空"
         : $"{Queue.Count} 个任务 · 整体 {QueueProgress:0}%";
 
-    public DownloadsPageViewModel(ILauncherDataService dataService)
+    public DownloadsPageViewModel(ILauncherDataService dataService, INavigationService navigation)
     {
         _dataService = dataService;
+        _navigation = navigation;
 
         SearchText = string.Empty;
         StatusMessage = "准备就绪";
 
-        // 先赋下载源，再赋分类——赋分类会触发 ApplyQuery，其中会读取下载源。
+        // 赋值顺序有讲究：会被 ApplyQuery 读取的属性必须先赋，
+        // 最后再赋分类 —— 由它触发首次 ApplyQuery。
         SelectedSource = Sources[0];
+        SelectedPageSize = PageSizes[0];
         SelectedCategory = Categories[0];
 
         Queue.CollectionChanged += OnQueueChanged;
@@ -120,14 +170,24 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
 
     partial void OnSelectedCategoryChanged(SelectOption<DownloadCategory?> value) => ApplyQuery();
 
+    partial void OnSelectedPageSizeChanged(SelectOption<int> value) => ApplyQuery();
+
+    partial void OnCurrentPageChanged(int value)
+    {
+        if (!_suppressPageRefresh)
+        {
+            RefreshPage();
+        }
+    }
+
     partial void OnQueueProgressChanged(double value) => OnPropertyChanged(nameof(QueueSummary));
 
     partial void OnIsDownloadingChanged(bool value) => StartQueueCommand.NotifyCanExecuteChanged();
 
-    /// <summary>按当前搜索 / 分类条件刷新列表。</summary>
+    /// <summary>按当前搜索 / 分类条件刷新列表，并回到第一页。</summary>
     private void ApplyQuery()
     {
-        if (SelectedCategory is null || SelectedSource is null)
+        if (SelectedCategory is null || SelectedSource is null || SelectedPageSize is null)
         {
             return;
         }
@@ -148,19 +208,98 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
             query = query.Where(item => item.Category == category);
         }
 
+        _filteredItems.Clear();
+        _filteredItems.AddRange(query);
+
+        TotalPages = Math.Max(1, (int)Math.Ceiling(_filteredItems.Count / (double)SelectedPageSize.Value));
+
+        _suppressPageRefresh = true;
+        CurrentPage = 1;
+        _suppressPageRefresh = false;
+        RefreshPage();
+
+        OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(HasItems));
+
+        StatusMessage = _filteredItems.Count == 0
+            ? $"没有匹配「{SelectedCategory.DisplayName}」的条目 · 下载源：{SelectedSource.Value.ToLabel()}"
+            : $"共 {_filteredItems.Count} 条（{SelectedCategory.DisplayName}）· 下载源：{SelectedSource.Value.ToLabel()}";
+    }
+
+    /// <summary>按当前页码重建当前页条目与分页条。</summary>
+    private void RefreshPage()
+    {
+        var pageSize = SelectedPageSize?.Value ?? 10;
+
         Items.Clear();
-        foreach (var item in query)
+        foreach (var item in _filteredItems.Skip((CurrentPage - 1) * pageSize).Take(pageSize))
         {
             Items.Add(item);
         }
 
-        OnPropertyChanged(nameof(IsEmpty));
-        StatusMessage = $"显示 {Items.Count} / {_allItems.Count} 个条目 · 下载源：{SelectedSource.Value.ToLabel()}";
+        // 数字页码：最多显示 7 个，围绕当前页居中。
+        PageButtons.Clear();
+        var start = Math.Max(1, Math.Min(CurrentPage - 3, TotalPages - 6));
+        var end = Math.Min(TotalPages, start + 6);
+        for (var page = start; page <= end; page++)
+        {
+            PageButtons.Add(new PageButtonViewModel(page, page == CurrentPage));
+        }
+
+        OnPropertyChanged(nameof(PageSummary));
+        OnPropertyChanged(nameof(CanGoPrevious));
+        OnPropertyChanged(nameof(CanGoNext));
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
     }
+
+    /// <summary>跳转到指定页码（越界会被收敛到有效范围）。</summary>
+    public void GoToPage(int page)
+    {
+        var target = Math.Clamp(page, 1, Math.Max(1, TotalPages));
+        if (target == CurrentPage)
+        {
+            return;
+        }
+
+        CurrentPage = target;
+    }
+
+    private bool CanGoPreviousPage() => CanGoPrevious;
+
+    private bool CanGoNextPage() => CanGoNext;
+
+    /// <summary>上一页。</summary>
+    [RelayCommand(CanExecute = nameof(CanGoPreviousPage))]
+    private void PreviousPage() => GoToPage(CurrentPage - 1);
+
+    /// <summary>下一页。</summary>
+    [RelayCommand(CanExecute = nameof(CanGoNextPage))]
+    private void NextPage() => GoToPage(CurrentPage + 1);
+
+    /// <summary>第一页。</summary>
+    [RelayCommand]
+    private void FirstPage() => GoToPage(1);
+
+    /// <summary>最后一页。</summary>
+    [RelayCommand]
+    private void LastPage() => GoToPage(TotalPages);
 
     /// <summary>刷新列表（演示）。</summary>
     [RelayCommand]
     private void Refresh() => StatusMessage = $"已刷新列表（演示）· 下载源：{SelectedSource.Value.ToLabel()}";
+
+    /// <summary>进入版本详情页（仅「版本」条目可用）。</summary>
+    /// <param name="item">条目。</param>
+    public void OpenDetail(DownloadItem item)
+    {
+        if (!item.IsVersion)
+        {
+            return;
+        }
+
+        _navigation.Navigate("version-detail", item);
+    }
 
     /// <summary>把条目加入下载队列。</summary>
     public void Enqueue(DownloadItem item)

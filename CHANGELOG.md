@@ -9,7 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **大更新 ④-7｜日志页与关于页**：`Views/LogsPage`、`Views/AboutPage` 由占位页重做。
+- **大更新 ④-8｜下载中心扩展（分页 · 七类分类 · 版本详情）**：`Views/DownloadsPage` 增强，并新增二级页面 `Views/VersionDetailPage`。
+  - 分类调整为 **版本 / 模组 / 资源包 / 光影 / 世界 / 数据包 / 整合包**（共 7 类）：移除独立的「模组加载器」分类（改为随版本安装）、「地图存档」更名「世界」、新增「数据包」。
+  - 列表**分页**：数字页码（围绕当前页最多显示 7 个）+ 首页 / 上一页 / 下一页 / 末页；每页条数可选 10 / 20 / 50；筛选或搜索变化时自动回到第一页。
+  - **版本详情页**：由列表中的「查看」进入（路由键 `version-detail`）。展示版本号、发布通道、发布日期、体积、下载次数与简介；**多选**模组加载器（Fabric / NeoForge / Forge / Quilt）并选择加载器版本后「一起安装」，右侧实时显示安装摘要与目标实例名。可选加载器随游戏版本变化（快照 / 远古版无第三方加载器；Forge 面向 1.20.x 及以下，NeoForge 面向 1.20.1 及以上）。
+  - 「一起安装」为纯 UI 演示：以三阶段进度模拟，**不下载任何文件、不创建真实实例**。
+  - 非「版本」条目仍为「下载」按钮，直接加入下载队列。
+- 新增模型 `Models/ModLoader`、`Models/LoaderEntry` 及 `Models/ModLoaderExtensions`；`Models/DownloadItem` 增加发布通道、发布日期与「是否为版本条目」等属性；`Models/DownloadCategory` 调整为 7 类。
+- 新增视图模型 `ViewModels/VersionDetailPageViewModel`（含多选加载器与安装摘要）、`ViewModels/LoaderOptionViewModel`、`ViewModels/PageButtonViewModel`。
+- `ILauncherDataService` 增加 `GetLoadersAsync`；`MockLauncherDataService` 下载条目扩充到 37 条，并按游戏版本返回可用加载器。
+- 导航服务 `INavigationService` / `NavigationService` 支持**携带参数导航**与**回退**（`Navigate(key, parameter)` / `GoBack` / `CanGoBack`），并新增 `version-detail` 路由；返回下载中心时保留分页与筛选状态。
+- `Themes/Icons.xaml` 新增返回与右向箭头字形（`IconBackGlyph` / `IconChevronRightGlyph`）。- **大更新 ④-7｜日志页与关于页**：`Views/LogsPage`、`Views/AboutPage` 由占位页重做。
   - 日志页：级别门槛筛选（全部 / 调试及以上 / 常规及以上 / 警告及以上 / 仅错误）、关键字搜索、自动滚动开关；固定列宽的时间 / 级别徽章 / 来源 / 消息四列布局，错误与警告带颜色指示点；支持复制当前日志（**真实剪贴板**）、清空视图与重新载入。
   - 关于页：产品卡（图标、版本、阶段、版权、简介）、技术栈卡、当前阶段说明卡；侧栏含运行环境（操作系统 / .NET 运行时 / 进程架构 / 数据目录，均为真实取值）与「复制环境信息」、链接卡与致谢卡。
 - 新增 `Models/AppInfo`（集中定义产品名、版本、技术栈与运行环境描述）与 `Models/LogEntry`；`AppLogLevelExtensions` 增加短标签。

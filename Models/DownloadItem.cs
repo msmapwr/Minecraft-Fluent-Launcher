@@ -1,3 +1,5 @@
+using System;
+
 namespace WINUI.Models;
 
 /// <summary>
@@ -18,7 +20,7 @@ public sealed class DownloadItem
     /// <summary>所属分类。</summary>
     public required DownloadCategory Category { get; init; }
 
-    /// <summary>适配的版本范围。</summary>
+    /// <summary>适配的版本范围（「版本」条目即版本号本身）。</summary>
     public required string Version { get; init; }
 
     /// <summary>体积（MB）。</summary>
@@ -32,6 +34,18 @@ public sealed class DownloadItem
 
     /// <summary>是否已安装。</summary>
     public bool IsInstalled { get; init; }
+
+    /// <summary>发布通道（仅「版本」条目有意义）。</summary>
+    public VersionChannel Channel { get; init; } = VersionChannel.Release;
+
+    /// <summary>发布日期（仅「版本」条目有意义）。</summary>
+    public DateOnly? ReleasedAt { get; init; }
+
+    /// <summary>是否为可进入详情的「版本」条目。</summary>
+    public bool IsVersion => Category == DownloadCategory.GameVersion;
+
+    /// <summary>是否不是「版本」条目（与 <see cref="IsVersion"/> 互斥，用于按钮切换显示）。</summary>
+    public bool IsNotVersion => !IsVersion;
 
     /// <summary>分类标签。</summary>
     public string CategoryLabel => Category.ToLabel();
@@ -48,4 +62,12 @@ public sealed class DownloadItem
 
     /// <summary>安装状态标签。</summary>
     public string InstallStateLabel => IsInstalled ? "已安装" : "未安装";
+
+    /// <summary>发布通道标签。</summary>
+    public string ChannelLabel => Channel.ToLabel();
+
+    /// <summary>发布日期标签。</summary>
+    public string ReleasedAtLabel => ReleasedAt is null
+        ? "—"
+        : ReleasedAt.Value.ToString("yyyy-MM-dd");
 }

@@ -24,6 +24,13 @@ public interface ILauncherDataService
     /// <summary>获取下载中心的可下载条目。</summary>
     Task<IReadOnlyList<DownloadItem>> GetDownloadItemsAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// 获取指定游戏版本可安装的模组加载器清单。
+    /// <para>不支持的版本（快照 / 远古版）返回空列表。</para>
+    /// </summary>
+    /// <param name="gameVersion">游戏版本号，如 <c>1.21.4</c>。</param>
+    Task<IReadOnlyList<LoaderEntry>> GetLoadersAsync(string gameVersion, CancellationToken cancellationToken = default);
+
     /// <summary>获取指定实例下的模组列表。</summary>
     Task<IReadOnlyList<ModEntry>> GetModsAsync(string instanceId, CancellationToken cancellationToken = default);
 

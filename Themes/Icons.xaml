@@ -35,6 +35,8 @@
     <x:String x:Key="IconAddGlyph">&#xE710;</x:String>
     <x:String x:Key="IconDeleteGlyph">&#xE74D;</x:String>
     <x:String x:Key="IconFolderGlyph">&#xE8B7;</x:String>
+    <x:String x:Key="IconBackGlyph">&#xE72B;</x:String>
+    <x:String x:Key="IconChevronRightGlyph">&#xE76C;</x:String>
 
     <!-- ==================== 信息 ==================== -->
     <x:String x:Key="IconAccountGlyph">&#xE77B;</x:String>

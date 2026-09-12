@@ -15,12 +15,13 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- 页头 -->
         <StackPanel Grid.Row="0" Spacing="{StaticResource SpaceXs}">
             <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="下载中心" />
-            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="按分类浏览并下载游戏版本、加载器、模组与资源。" />
+            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="按分类浏览并下载游戏版本、模组、资源包、光影、世界与数据包；进入版本详情可一并安装模组加载器。" />
         </StackPanel>
 
         <!-- 工具栏 -->
@@ -38,6 +39,7 @@
                 Header="搜索"
                 PlaceholderText="名称、作者或简介"
                 QueryIcon="Find"
+                Text="{x:Bind ViewModel.SearchText, Mode=OneWay}"
                 TextChanged="OnSearchBoxTextChanged" />
             <ComboBox
                 Grid.Column="1"
@@ -125,20 +127,42 @@
                                             </StackPanel>
                                         </StackPanel>
 
-                                        <Button
+                                        <StackPanel
                                             Grid.Column="1"
-                                            Padding="16,8"
                                             VerticalAlignment="Center"
-                                            Click="OnDownloadClick"
-                                            Tag="{x:Bind}">
-                                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
-                                                <FontIcon
-                                                    FontFamily="{StaticResource AppIconFontFamily}"
-                                                    FontSize="14"
-                                                    Glyph="{StaticResource IconDownloadGlyph}" />
-                                                <TextBlock VerticalAlignment="Center" Text="下载" />
-                                            </StackPanel>
-                                        </Button>
+                                            Orientation="Horizontal"
+                                            Spacing="{StaticResource SpaceSm}">
+
+                                            <!-- 版本条目：进入详情页安装加载器 -->
+                                            <Button
+                                                Padding="16,8"
+                                                Click="OnDetailClick"
+                                                Tag="{x:Bind}"
+                                                Visibility="{x:Bind IsVersion}">
+                                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                                    <FontIcon
+                                                        FontFamily="{StaticResource AppIconFontFamily}"
+                                                        FontSize="14"
+                                                        Glyph="{StaticResource IconChevronRightGlyph}" />
+                                                    <TextBlock VerticalAlignment="Center" Text="查看" />
+                                                </StackPanel>
+                                            </Button>
+
+                                            <!-- 其它条目：直接加入下载队列 -->
+                                            <Button
+                                                Padding="16,8"
+                                                Click="OnDownloadClick"
+                                                Tag="{x:Bind}"
+                                                Visibility="{x:Bind IsNotVersion}">
+                                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                                    <FontIcon
+                                                        FontFamily="{StaticResource AppIconFontFamily}"
+                                                        FontSize="14"
+                                                        Glyph="{StaticResource IconDownloadGlyph}" />
+                                                    <TextBlock VerticalAlignment="Center" Text="下载" />
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -239,8 +263,93 @@
             </Border>
         </Grid>
 
+        <!-- 分页 -->
+        <Grid Grid.Row="3" ColumnSpacing="{StaticResource SpaceMd}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox
+                Grid.Column="0"
+                MinWidth="140"
+                VerticalAlignment="Bottom"
+                DisplayMemberPath="DisplayName"
+                Header="每页条数"
+                ItemsSource="{x:Bind ViewModel.PageSizes}"
+                SelectedItem="{x:Bind ViewModel.SelectedPageSize, Mode=TwoWay}" />
+
+            <StackPanel
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Orientation="Horizontal"
+                Spacing="{StaticResource SpaceXs}"
+                Visibility="{x:Bind ViewModel.HasItems, Mode=OneWay}">
+                <Button
+                    Padding="10,5"
+                    Command="{x:Bind ViewModel.FirstPageCommand}"
+                    Content="首页"
+                    FontSize="{StaticResource FontSizeCaption}" />
+                <Button
+                    Padding="10,5"
+                    Command="{x:Bind ViewModel.PreviousPageCommand}"
+                    Content="上一页"
+                    FontSize="{StaticResource FontSizeCaption}" />
+
+                <ItemsControl ItemsSource="{x:Bind ViewModel.PageButtons}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:PageButtonViewModel">
+                            <Grid>
+                                <Button
+                                    MinWidth="36"
+                                    Padding="8,5"
+                                    Click="OnPageClick"
+                                    Content="{x:Bind Label}"
+                                    FontSize="{StaticResource FontSizeCaption}"
+                                    Tag="{x:Bind Number}"
+                                    Visibility="{x:Bind IsNotCurrent, Mode=OneWay}" />
+                                <Button
+                                    MinWidth="36"
+                                    Padding="8,5"
+                                    Click="OnPageClick"
+                                    Content="{x:Bind Label}"
+                                    FontSize="{StaticResource FontSizeCaption}"
+                                    Style="{StaticResource AppAccentButtonStyle}"
+                                    Tag="{x:Bind Number}"
+                                    Visibility="{x:Bind IsCurrent, Mode=OneWay}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button
+                    Padding="10,5"
+                    Command="{x:Bind ViewModel.NextPageCommand}"
+                    Content="下一页"
+                    FontSize="{StaticResource FontSizeCaption}" />
+                <Button
+                    Padding="10,5"
+                    Command="{x:Bind ViewModel.LastPageCommand}"
+                    Content="末页"
+                    FontSize="{StaticResource FontSizeCaption}" />
+            </StackPanel>
+
+            <TextBlock
+                Grid.Column="2"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource AppCaptionTextStyle}"
+                Text="{x:Bind ViewModel.PageSummary, Mode=OneWay}" />
+        </Grid>
+
         <!-- 状态栏 -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
             <Ellipse
                 Width="8"
                 Height="8"

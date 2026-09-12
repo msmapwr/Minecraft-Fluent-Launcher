@@ -200,6 +200,7 @@ public sealed class MockLauncherDataService : ILauncherDataService
 
     private static readonly IReadOnlyList<DownloadItem> DownloadItems =
     [
+        // ==================== 版本 ====================
         new()
         {
             Id = "mc-1.21.4",
@@ -207,10 +208,25 @@ public sealed class MockLauncherDataService : ILauncherDataService
             Author = "Mojang Studios",
             Category = DownloadCategory.GameVersion,
             Version = "1.21.4",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2024, 12, 3),
             SizeMb = 312,
             DownloadCount = 128_400,
             Description = "最新正式版，包含「苍园」生物群系与两种木质建材变体。",
             IsInstalled = true,
+        },
+        new()
+        {
+            Id = "mc-1.21.3",
+            Name = "Minecraft 1.21.3",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.21.3",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2024, 10, 23),
+            SizeMb = 309,
+            DownloadCount = 42_100,
+            Description = "1.21 系列的稳定修正版本，修复了若干崩溃与同步问题。",
         },
         new()
         {
@@ -219,6 +235,8 @@ public sealed class MockLauncherDataService : ILauncherDataService
             Author = "Mojang Studios",
             Category = DownloadCategory.GameVersion,
             Version = "1.21.1",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2024, 8, 8),
             SizeMb = 306,
             DownloadCount = 96_200,
             Description = "模组生态最成熟的 1.21 版本，推荐用于整合包。",
@@ -226,28 +244,124 @@ public sealed class MockLauncherDataService : ILauncherDataService
         },
         new()
         {
-            Id = "loader-neoforge",
-            Name = "NeoForge",
-            Author = "NeoForged",
-            Category = DownloadCategory.Loader,
-            Version = "21.1.72 / 21.4.x",
-            SizeMb = 24,
-            DownloadCount = 42_800,
-            Description = "Forge 的社区继任者，支持 1.20.1 及以上的现代模组加载。",
+            Id = "mc-1.21",
+            Name = "Minecraft 1.21",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.21",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2024, 6, 13),
+            SizeMb = 305,
+            DownloadCount = 88_700,
+            Description = "「诡谲试炼」更新，新增试炼密室、重锤武器与自动合成器。",
+        },
+        new()
+        {
+            Id = "mc-1.20.6",
+            Name = "Minecraft 1.20.6",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.20.6",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2024, 4, 29),
+            SizeMb = 298,
+            DownloadCount = 34_500,
+            Description = "1.20 系列的收尾版本，以小幅平衡性调整为主。",
+        },
+        new()
+        {
+            Id = "mc-1.20.4",
+            Name = "Minecraft 1.20.4",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.20.4",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2023, 12, 7),
+            SizeMb = 296,
+            DownloadCount = 47_900,
+            Description = "修复 1.20.3 中的装饰陶罐与方块更新问题。",
+        },
+        new()
+        {
+            Id = "mc-1.20.1",
+            Name = "Minecraft 1.20.1",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.20.1",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2023, 6, 12),
+            SizeMb = 214,
+            DownloadCount = 156_300,
+            Description = "Forge / NeoForge 生态最成熟的版本，模组兼容性最佳。",
             IsInstalled = true,
         },
         new()
         {
-            Id = "loader-fabric",
-            Name = "Fabric Loader",
-            Author = "FabricMC",
-            Category = DownloadCategory.Loader,
-            Version = "0.16.9",
-            SizeMb = 6,
-            DownloadCount = 88_500,
-            Description = "轻量、启动快、更新及时，适合性能向与小型模组。",
-            IsInstalled = true,
+            Id = "mc-1.19.4",
+            Name = "Minecraft 1.19.4",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.19.4",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2023, 3, 14),
+            SizeMb = 210,
+            DownloadCount = 39_200,
+            Description = "「荒野更新」之后的稳定版本，加入樱花木与饰纹陶罐。",
         },
+        new()
+        {
+            Id = "mc-1.19.2",
+            Name = "Minecraft 1.19.2",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.19.2",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2022, 8, 5),
+            SizeMb = 208,
+            DownloadCount = 63_800,
+            Description = "经典稳定版本，大量老整合包仍以此为基线。",
+        },
+        new()
+        {
+            Id = "mc-1.18.2",
+            Name = "Minecraft 1.18.2",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.18.2",
+            Channel = VersionChannel.Release,
+            ReleasedAt = new DateOnly(2022, 2, 28),
+            SizeMb = 196,
+            DownloadCount = 55_400,
+            Description = "「洞穴与山崖」第二阶段的收官版本。",
+        },
+        new()
+        {
+            Id = "mc-25w03a",
+            Name = "Minecraft 25w03a",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "25w03a",
+            Channel = VersionChannel.Snapshot,
+            ReleasedAt = new DateOnly(2025, 1, 15),
+            SizeMb = 288,
+            DownloadCount = 6_200,
+            Description = "2025 年首个快照，含实验性的世界生成改动。",
+        },
+        new()
+        {
+            Id = "mc-b1.7.3",
+            Name = "Minecraft Beta 1.7.3",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "b1.7.3",
+            Channel = VersionChannel.Legacy,
+            ReleasedAt = new DateOnly(2011, 7, 8),
+            SizeMb = 42,
+            DownloadCount = 12_900,
+            Description = "远古 Beta 版本，仅推荐怀旧与存档研究使用。",
+        },
+
+        // ==================== 模组 ====================
         new()
         {
             Id = "mod-sodium",
@@ -273,6 +387,52 @@ public sealed class MockLauncherDataService : ILauncherDataService
         },
         new()
         {
+            Id = "mod-lithium",
+            Name = "Lithium",
+            Author = "CaffeineMC",
+            Category = DownloadCategory.Mod,
+            Version = "1.21.4",
+            SizeMb = 1,
+            DownloadCount = 44_200,
+            Description = "优化物理、方块刻与实体 AI，不改变游戏行为。",
+        },
+        new()
+        {
+            Id = "mod-iris",
+            Name = "Iris Shaders",
+            Author = "IrisShaders",
+            Category = DownloadCategory.Mod,
+            Version = "1.21.4",
+            SizeMb = 2,
+            DownloadCount = 38_700,
+            Description = "兼容 OptiFine 光影包的高性能光影加载器。",
+        },
+        new()
+        {
+            Id = "mod-xaero",
+            Name = "Xaero's Minimap",
+            Author = "xaero96",
+            Category = DownloadCategory.Mod,
+            Version = "1.21.x",
+            SizeMb = 3,
+            DownloadCount = 29_500,
+            Description = "可自定义的小地图，支持路径点与实体雷达。",
+        },
+        new()
+        {
+            Id = "mod-terralith",
+            Name = "Terralith",
+            Author = "Stardust Labs",
+            Category = DownloadCategory.Mod,
+            Version = "1.21.4",
+            SizeMb = 5,
+            DownloadCount = 18_400,
+            Description = "使用原版方块生成的全新地形，新增上百种生物群系。",
+        },
+
+        // ==================== 资源包 ====================
+        new()
+        {
             Id = "resource-faithful",
             Name = "Faithful 32x",
             Author = "Faithful Team",
@@ -282,6 +442,41 @@ public sealed class MockLauncherDataService : ILauncherDataService
             DownloadCount = 52_100,
             Description = "在原版风格基础上提升至 32x 分辨率的经典资源包。",
         },
+        new()
+        {
+            Id = "resource-barebones",
+            Name = "Bare Bones",
+            Author = "RobotPants",
+            Category = DownloadCategory.ResourcePack,
+            Version = "1.21.x",
+            SizeMb = 6,
+            DownloadCount = 21_800,
+            Description = "极简平面风格，配色干净、辨识度高。",
+        },
+        new()
+        {
+            Id = "resource-staytrue",
+            Name = "Stay True",
+            Author = "BobisHere",
+            Category = DownloadCategory.ResourcePack,
+            Version = "1.21.x",
+            SizeMb = 24,
+            DownloadCount = 17_300,
+            Description = "保留原版比例的同时优化材质细节与光照贴图。",
+        },
+        new()
+        {
+            Id = "resource-freshanim",
+            Name = "Fresh Animations",
+            Author = "FreshLX",
+            Category = DownloadCategory.ResourcePack,
+            Version = "1.20.1 – 1.21.4",
+            SizeMb = 12,
+            DownloadCount = 33_600,
+            Description = "为生物添加细腻的动画，需要 OptiFine / ETF 支持。",
+        },
+
+        // ==================== 光影 ====================
         new()
         {
             Id = "shader-complementary",
@@ -295,15 +490,39 @@ public sealed class MockLauncherDataService : ILauncherDataService
         },
         new()
         {
-            Id = "modpack-better-mc",
-            Name = "Better MC [FORGE]",
-            Author = "Luna Pixel Studios",
-            Category = DownloadCategory.Modpack,
-            Version = "1.20.1",
-            SizeMb = 1024,
-            DownloadCount = 23_400,
-            Description = "面向探索与冒险的整合包，含数百个模组与任务书。",
+            Id = "shader-bsl",
+            Name = "BSL Shaders",
+            Author = "CaptTatsu",
+            Category = DownloadCategory.Shader,
+            Version = "8.2.06",
+            SizeMb = 10,
+            DownloadCount = 46_900,
+            Description = "风格柔和的经典光影，配置门槛低、兼容性好。",
         },
+        new()
+        {
+            Id = "shader-seus",
+            Name = "SEUS PTGI",
+            Author = "Sonic Ether",
+            Category = DownloadCategory.Shader,
+            Version = "HRR 2.1",
+            SizeMb = 26,
+            DownloadCount = 15_200,
+            Description = "基于光线追踪的写实光影，对显卡性能要求较高。",
+        },
+        new()
+        {
+            Id = "shader-sildurs",
+            Name = "Sildur's Vibrant Shaders",
+            Author = "Sildur",
+            Category = DownloadCategory.Shader,
+            Version = "1.51",
+            SizeMb = 9,
+            DownloadCount = 24_700,
+            Description = "色彩鲜艳、可分级配置的光影，适合中端显卡。",
+        },
+
+        // ==================== 世界 ====================
         new()
         {
             Id = "world-skyblock",
@@ -315,7 +534,152 @@ public sealed class MockLauncherDataService : ILauncherDataService
             DownloadCount = 17_800,
             Description = "经典空岛生存地图，附带自定义进度与商店系统。",
         },
+        new()
+        {
+            Id = "world-oneblock",
+            Name = "One Block 单方块生存",
+            Author = "社区地图",
+            Category = DownloadCategory.World,
+            Version = "1.21.x",
+            SizeMb = 8,
+            DownloadCount = 26_400,
+            Description = "从一块方块开始，逐步扩展世界的趣味玩法。",
+        },
+        new()
+        {
+            Id = "world-parkour",
+            Name = "Parkour Paradise",
+            Author = "社区地图",
+            Category = DownloadCategory.World,
+            Version = "1.20.1",
+            SizeMb = 15,
+            DownloadCount = 13_600,
+            Description = "100 关跑酷地图，难度循序渐进，适合单人挑战。",
+        },
+        new()
+        {
+            Id = "world-city",
+            Name = "现代都市建造模板",
+            Author = "社区地图",
+            Category = DownloadCategory.World,
+            Version = "1.21.x",
+            SizeMb = 96,
+            DownloadCount = 9_300,
+            Description = "预置道路与地块的现代都市地图，适合建筑与红石创作。",
+        },
+
+        // ==================== 数据包 ====================
+        new()
+        {
+            Id = "datapack-vanillatweaks",
+            Name = "Vanilla Tweaks 数据包集",
+            Author = "Vanilla Tweaks",
+            Category = DownloadCategory.DataPack,
+            Version = "1.21.x",
+            SizeMb = 3,
+            DownloadCount = 41_200,
+            Description = "社区维护的数据包合集，可按需勾选合成、HUD 与实用调整。",
+        },
+        new()
+        {
+            Id = "datapack-terralith",
+            Name = "Terralith 数据包版",
+            Author = "Stardust Labs",
+            Category = DownloadCategory.DataPack,
+            Version = "1.21.4",
+            SizeMb = 5,
+            DownloadCount = 12_100,
+            Description = "无需安装模组即可获得 Terralith 的全新地形生成。",
+        },
+        new()
+        {
+            Id = "datapack-crafting",
+            Name = "更好的合成配方",
+            Author = "社区数据包",
+            Category = DownloadCategory.DataPack,
+            Version = "1.21.x",
+            SizeMb = 1,
+            DownloadCount = 19_800,
+            Description = "补充大量便利合成配方，如马铠、命名牌与附魔金苹果。",
+        },
+        new()
+        {
+            Id = "datapack-hardcore",
+            Name = "硬核难度调整",
+            Author = "社区数据包",
+            Category = DownloadCategory.DataPack,
+            Version = "1.20.1 – 1.21.4",
+            SizeMb = 1,
+            DownloadCount = 8_900,
+            Description = "提高怪物强度与饥饿消耗，面向硬核生存玩家。",
+        },
+
+        // ==================== 整合包 ====================
+        new()
+        {
+            Id = "modpack-better-mc",
+            Name = "Better MC [FORGE]",
+            Author = "Luna Pixel Studios",
+            Category = DownloadCategory.Modpack,
+            Version = "1.20.1",
+            SizeMb = 1024,
+            DownloadCount = 23_400,
+            Description = "面向探索与冒险的整合包，含数百个模组与任务书。",
+        },
+        new()
+        {
+            Id = "modpack-fabulously",
+            Name = "Fabulously Optimized",
+            Author = "RobotPants 社区",
+            Category = DownloadCategory.Modpack,
+            Version = "1.21.4",
+            SizeMb = 486,
+            DownloadCount = 35_700,
+            Description = "以性能与帧率优化为核心的轻量整合包，安装即玩。",
+        },
+        new()
+        {
+            Id = "modpack-rlcraft",
+            Name = "RLCraft",
+            Author = "Shivaxi",
+            Category = DownloadCategory.Modpack,
+            Version = "1.12.2",
+            SizeMb = 2048,
+            DownloadCount = 61_500,
+            Description = "硬核生存整合包的代表作，以极高难度与庞大模组量闻名。",
+        },
     ];
+
+    /// <summary>
+    /// 可安装的模组加载器（Mock）。具体某个游戏版本能装哪些，由 <see cref="GetLoadersAsync"/> 决定。
+    /// </summary>
+    private static readonly LoaderEntry FabricEntry = new()
+    {
+        Loader = ModLoader.Fabric,
+        Versions = ["0.16.10", "0.16.9", "0.15.11", "0.15.7"],
+        RecommendedVersion = "0.16.9",
+    };
+
+    private static readonly LoaderEntry NeoForgeEntry = new()
+    {
+        Loader = ModLoader.NeoForge,
+        Versions = ["21.4.76", "21.1.72", "20.6.119"],
+        RecommendedVersion = "21.1.72",
+    };
+
+    private static readonly LoaderEntry ForgeEntry = new()
+    {
+        Loader = ModLoader.Forge,
+        Versions = ["47.4.0", "47.3.0", "43.2.0"],
+        RecommendedVersion = "47.3.0",
+    };
+
+    private static readonly LoaderEntry QuiltEntry = new()
+    {
+        Loader = ModLoader.Quilt,
+        Versions = ["0.24.0", "0.23.1", "0.22.0"],
+        RecommendedVersion = "0.23.1",
+    };
 
     private static readonly IReadOnlyList<ModEntry> Mods =
     [
@@ -524,6 +888,47 @@ public sealed class MockLauncherDataService : ILauncherDataService
     /// <inheritdoc />
     public Task<IReadOnlyList<DownloadItem>> GetDownloadItemsAsync(CancellationToken cancellationToken = default)
         => Task.FromResult(DownloadItems);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// 简化规则（Mock）：快照 / 远古版本不提供第三方加载器；
+    /// Forge 仅面向 1.20.x 及以下，NeoForge 面向 1.20.1 及以上。
+    /// </remarks>
+    public Task<IReadOnlyList<LoaderEntry>> GetLoadersAsync(string gameVersion, CancellationToken cancellationToken = default)
+    {
+        if (!TryParseVersion(gameVersion, out var major, out var minor))
+        {
+            return Task.FromResult<IReadOnlyList<LoaderEntry>>([]);
+        }
+
+        var result = new List<LoaderEntry> { FabricEntry };
+
+        if (major > 1 || minor >= 20)
+        {
+            result.Add(NeoForgeEntry);
+        }
+
+        if (major == 1 && minor <= 20)
+        {
+            result.Add(ForgeEntry);
+        }
+
+        result.Add(QuiltEntry);
+
+        return Task.FromResult<IReadOnlyList<LoaderEntry>>(result);
+    }
+
+    /// <summary>从「主版本.次版本」形式的版本号中解析出两个数字；快照 / 远古版本解析失败。</summary>
+    private static bool TryParseVersion(string value, out int major, out int minor)
+    {
+        major = 0;
+        minor = 0;
+
+        var parts = value.Split('.');
+        return parts.Length >= 2
+            && int.TryParse(parts[0], out major)
+            && int.TryParse(parts[1], out minor);
+    }
 
     /// <inheritdoc />
     public Task<IReadOnlyList<GameVersion>> GetVersionsAsync(CancellationToken cancellationToken = default)
