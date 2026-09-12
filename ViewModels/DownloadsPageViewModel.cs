@@ -166,17 +166,28 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
         StartQueueCommand.NotifyCanExecuteChanged();
     }
 
-    partial void OnSearchTextChanged(string value) => ApplyQuery();
+    // 由绑定回调（ComboBox 的 TwoWay 选中项、AutoSuggestBox 文本）触发的集合重建，
+    // 必须推迟到 Dispatcher 回调里执行，否则可能与 XAML 布局冲突并抛出 COMException。
+    private readonly BoundCollectionUpdater _listUpdater = new();
+    private readonly BoundCollectionUpdater _pageUpdater = new();
 
-    partial void OnSelectedCategoryChanged(SelectOption<DownloadCategory?> value) => ApplyQuery();
+    /// <summary>请求重新计算筛选结果（推迟到 Dispatcher 回调执行）。</summary>
+    private void RequestListRefresh() => _listUpdater.Request(ApplyQuery);
 
-    partial void OnSelectedPageSizeChanged(SelectOption<int> value) => ApplyQuery();
+    /// <summary>请求重建当前页条目与分页条（推迟到 Dispatcher 回调执行）。</summary>
+    private void RequestPageRefresh() => _pageUpdater.Request(RefreshPage);
+
+    partial void OnSearchTextChanged(string value) => RequestListRefresh();
+
+    partial void OnSelectedCategoryChanged(SelectOption<DownloadCategory?> value) => RequestListRefresh();
+
+    partial void OnSelectedPageSizeChanged(SelectOption<int> value) => RequestListRefresh();
 
     partial void OnCurrentPageChanged(int value)
     {
         if (!_suppressPageRefresh)
         {
-            RefreshPage();
+            RequestPageRefresh();
         }
     }
 
@@ -216,7 +227,7 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
         _suppressPageRefresh = true;
         CurrentPage = 1;
         _suppressPageRefresh = false;
-        RefreshPage();
+        RequestPageRefresh();
 
         OnPropertyChanged(nameof(IsEmpty));
         OnPropertyChanged(nameof(HasItems));

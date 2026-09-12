@@ -128,8 +128,8 @@ public sealed partial class ModsPageViewModel : ObservableObject
             }
         }
 
-        ApplyQuery();
-        SelectedMod = Mods.FirstOrDefault();
+        // 集合重建统一走推迟刷新（该调用可能位于下拉框绑定回调的同步续体中）。
+        RequestRefresh();
         StatusMessage = instance is null
             ? "请先选择一个实例"
             : $"已加载「{instance.Name}」的模组列表";
@@ -146,15 +146,36 @@ public sealed partial class ModsPageViewModel : ObservableObject
         OnPropertyChanged(nameof(Summary));
 
         // 处于「已启用 / 已禁用」筛选时，切换开关需要同步刷新列表。
+        // 开关是 Mode=TwoWay 绑定，其回调可能落在布局过程中，故走推迟刷新。
         if (SelectedFilter.Value is ModFilter.Enabled or ModFilter.Disabled)
         {
-            ApplyQuery();
+            RequestRefresh();
         }
     }
 
-    partial void OnSearchTextChanged(string value) => ApplyQuery();
+    // 绑定回调（实例 / 筛选下拉、搜索框、模组启用开关）可能发生在 XAML 布局过程中，
+    // 而布局期间不得修改绑定集合（否则抛出 COMException），故列表重建统一推迟到 Dispatcher 回调。
+    private readonly BoundCollectionUpdater _listUpdater = new();
 
-    partial void OnSelectedFilterChanged(SelectOption<ModFilter> value) => ApplyQuery();
+    /// <summary>请求重建模组列表（推迟到 Dispatcher 回调执行）。</summary>
+    private void RequestRefresh() => _listUpdater.Request(RefreshMods);
+
+    /// <summary>重建列表，并保证详情面板的选中项落在当前可见的模组上。</summary>
+    private void RefreshMods()
+    {
+        var previous = SelectedMod;
+
+        ApplyQuery();
+
+        if (previous is null || Mods.Count == 0 || !Mods.Contains(previous))
+        {
+            SelectedMod = Mods.FirstOrDefault();
+        }
+    }
+
+    partial void OnSearchTextChanged(string value) => RequestRefresh();
+
+    partial void OnSelectedFilterChanged(SelectOption<ModFilter> value) => RequestRefresh();
 
     partial void OnSelectedInstanceChanged(SelectOption<GameInstance>? value) => _ = LoadModsAsync(value?.Value);
 

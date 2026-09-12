@@ -91,11 +91,18 @@ public sealed partial class InstancesPageViewModel : ObservableObject
         ApplyQuery();
     }
 
-    partial void OnSearchTextChanged(string value) => ApplyQuery();
+    // ComboBox 的 TwoWay 绑定回调可能发生在 XAML 布局过程中，而布局期间不得修改绑定集合
+    // （否则抛出 COMException）。故筛选 / 排序 / 搜索变化触发的重建统一推迟到 Dispatcher 回调执行。
+    private readonly BoundCollectionUpdater _listUpdater = new();
 
-    partial void OnSelectedFilterChanged(SelectOption<InstanceFilter> value) => ApplyQuery();
+    /// <summary>请求重新计算筛选结果（推迟到 Dispatcher 回调执行）。</summary>
+    private void RequestRefresh() => _listUpdater.Request(ApplyQuery);
 
-    partial void OnSelectedSortChanged(SelectOption<InstanceSort> value) => ApplyQuery();
+    partial void OnSearchTextChanged(string value) => RequestRefresh();
+
+    partial void OnSelectedFilterChanged(SelectOption<InstanceFilter> value) => RequestRefresh();
+
+    partial void OnSelectedSortChanged(SelectOption<InstanceSort> value) => RequestRefresh();
 
     /// <summary>按当前搜索 / 筛选 / 排序条件刷新列表。</summary>
     private void ApplyQuery()

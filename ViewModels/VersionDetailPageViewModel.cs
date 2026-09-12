@@ -98,6 +98,10 @@ public sealed partial class VersionDetailPageViewModel : ObservableObject
         StatusMessage = "正在读取版本信息…";
     }
 
+    // 本页由导航进入（OnNavigatedTo）时装配加载器列表；为避免与 XAML 布局冲突，
+    // 集合重建同样推迟到 Dispatcher 回调执行。
+    private readonly BoundCollectionUpdater _loadersUpdater = new();
+
     /// <summary>由页面在导航进入时调用，载入指定版本与可用加载器。</summary>
     /// <param name="item">导航参数（版本条目）。</param>
     public async Task LoadAsync(DownloadItem? item)
@@ -111,29 +115,30 @@ public sealed partial class VersionDetailPageViewModel : ObservableObject
             loader.PropertyChanged -= OnLoaderPropertyChanged;
         }
 
-        Loaders.Clear();
+        var entries = item is null
+            ? Array.Empty<LoaderEntry>()
+            : (await _dataService.GetLoadersAsync(item.Version)).ToArray();
 
-        if (item is null)
+        _loadersUpdater.Request(() =>
         {
-            StatusMessage = "未获取到版本信息，请返回下载中心重试";
+            Loaders.Clear();
+
+            foreach (var entry in entries)
+            {
+                var option = new LoaderOptionViewModel(entry);
+                option.PropertyChanged += OnLoaderPropertyChanged;
+                Loaders.Add(option);
+            }
+
             RefreshSummary();
             NotifyLoaderState();
-            return;
-        }
+        });
 
-        foreach (var entry in await _dataService.GetLoadersAsync(item.Version))
-        {
-            var option = new LoaderOptionViewModel(entry);
-            option.PropertyChanged += OnLoaderPropertyChanged;
-            Loaders.Add(option);
-        }
-
-        RefreshSummary();
-        NotifyLoaderState();
-
-        StatusMessage = Loaders.Count == 0
-            ? "该版本不支持第三方模组加载器，将按原版安装"
-            : $"已读取 {Loaders.Count} 个可用加载器，可多选后一并安装";
+        StatusMessage = item is null
+            ? "未获取到版本信息，请返回下载中心重试"
+            : entries.Length == 0
+                ? "该版本不支持第三方模组加载器，将按原版安装"
+                : $"已读取 {entries.Length} 个可用加载器，可多选后一并安装";
     }
 
     partial void OnVersionChanged(DownloadItem? value)
