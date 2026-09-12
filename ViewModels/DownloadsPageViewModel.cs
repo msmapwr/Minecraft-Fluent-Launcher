@@ -148,10 +148,17 @@ public sealed partial class DownloadsPageViewModel : PageViewModelBase
         ? "队列为空"
         : $"{Queue.Count} 个任务 · 整体 {QueueProgress:0}%";
 
-    public DownloadsPageViewModel(ILauncherDataService dataService, INavigationService navigation)
+    /// <summary>破坏性操作的二次确认与操作结果通知。</summary>
+    private readonly IInteractionService _interaction;
+
+    public DownloadsPageViewModel(
+        ILauncherDataService dataService,
+        INavigationService navigation,
+        IInteractionService interaction)
     {
         _dataService = dataService;
         _navigation = navigation;
+        _interaction = interaction;
 
         SearchText = string.Empty;
         StatusMessage = "准备就绪";
@@ -354,12 +361,23 @@ public sealed partial class DownloadsPageViewModel : PageViewModelBase
         if (Queue.Any(task => task.Item.Id == item.Id && !task.IsCompleted))
         {
             StatusMessage = $"「{item.Name}」已在下载队列中";
+
+            _interaction.Notify(
+                $"「{item.Name}」已经在下载队列中了。",
+                NotificationSeverity.Warning,
+                "重复添加");
+
             return;
         }
 
         Queue.Add(new DownloadTaskViewModel(item));
         UpdateQueueProgress();
         StatusMessage = $"已加入队列：{item.Name}（演示，未下载）";
+
+        _interaction.Notify(
+            $"已把「{item.Name}」加入下载队列（演示，未下载）",
+            NotificationSeverity.Success,
+            "已加入队列");
     }
 
     private bool CanStartQueue() => !IsDownloading && Queue.Count > 0;
@@ -386,6 +404,11 @@ public sealed partial class DownloadsPageViewModel : PageViewModelBase
             }
 
             StatusMessage = "全部任务已完成（演示，未写入磁盘）";
+
+            _interaction.Notify(
+                "全部下载任务已完成（演示，未写入磁盘）",
+                NotificationSeverity.Success,
+                "下载完成");
         }
         finally
         {
@@ -394,19 +417,54 @@ public sealed partial class DownloadsPageViewModel : PageViewModelBase
         }
     }
 
-    /// <summary>清空下载队列。</summary>
+    /// <summary>
+    /// 清空下载队列。队列中可能还有未完成的任务，因此先弹出二次确认。
+    /// </summary>
     [RelayCommand]
-    private void ClearQueue()
+    private async Task ClearQueueAsync()
     {
         if (IsDownloading)
         {
             StatusMessage = "下载进行中，无法清空队列";
+
+            _interaction.Notify(
+                "下载正在进行，请等待完成后再清空队列。",
+                NotificationSeverity.Warning,
+                "无法清空");
+
+            return;
+        }
+
+        if (Queue.Count == 0)
+        {
+            StatusMessage = "下载队列本来就是空的";
+            return;
+        }
+
+        var pending = Queue.Count(task => !task.IsCompleted);
+
+        var confirmed = await _interaction.ConfirmAsync(
+            "清空下载队列",
+            pending > 0
+                ? $"队列中还有 {pending} 个未完成的任务，清空后将全部丢弃。"
+                : "将移出队列中的全部任务。",
+            "清空",
+            "取消");
+
+        if (!confirmed)
+        {
+            StatusMessage = "已取消清空队列";
             return;
         }
 
         Queue.Clear();
         UpdateQueueProgress();
         StatusMessage = "已清空下载队列";
+
+        _interaction.Notify(
+            "下载队列已清空（演示，未影响磁盘文件）",
+            NotificationSeverity.Success,
+            "已清空");
     }
 
     private void UpdateQueueProgress()

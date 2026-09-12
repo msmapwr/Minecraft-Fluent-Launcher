@@ -82,9 +82,13 @@ public sealed partial class InstancesPageViewModel : PageViewModelBase
         ? "点击右上角「新建实例」创建第一个游戏实例。"
         : "没有符合当前搜索与筛选条件的实例，试试换个关键字。";
 
-    public InstancesPageViewModel(ILauncherDataService dataService)
+    /// <summary>破坏性操作的二次确认与操作结果通知。</summary>
+    private readonly IInteractionService _interaction;
+
+    public InstancesPageViewModel(ILauncherDataService dataService, IInteractionService interaction)
     {
         _dataService = dataService;
+        _interaction = interaction;
 
         SearchText = string.Empty;
         StatusMessage = "准备就绪";
@@ -202,27 +206,70 @@ public sealed partial class InstancesPageViewModel : PageViewModelBase
         _allInstances.Add(created);
         ApplyQuery();
         StatusMessage = $"已创建「{created.Name}」（演示，未写入磁盘）";
+
+        _interaction.Notify(
+            $"已创建实例「{created.Name}」（演示，未写入磁盘）",
+            NotificationSeverity.Success,
+            "创建成功");
     }
 
     /// <summary>启动指定实例（演示）。</summary>
     public void Launch(GameInstance instance)
     {
-        StatusMessage = instance.IsInstalled
-            ? $"正在启动「{instance.Name}」…（演示，未拉起进程）"
-            : $"「{instance.Name}」尚未安装，请先前往下载中心安装。";
+        if (!instance.IsInstalled)
+        {
+            StatusMessage = $"「{instance.Name}」尚未安装，请先前往下载中心安装。";
+
+            _interaction.Notify(
+                $"「{instance.Name}」尚未安装，请先前往下载中心安装。",
+                NotificationSeverity.Warning,
+                "无法启动");
+
+            return;
+        }
+
+        StatusMessage = $"正在启动「{instance.Name}」…（演示，未拉起进程）";
+
+        _interaction.Notify(
+            $"正在启动「{instance.Name}」（演示，未拉起进程）",
+            NotificationSeverity.Informational,
+            "启动中");
     }
 
     /// <summary>打开实例目录（演示）。</summary>
     public void OpenFolder(GameInstance instance)
         => StatusMessage = $"（演示）将打开实例目录：{instance.Id}";
 
-    /// <summary>删除指定实例（演示）。</summary>
-    public void Delete(GameInstance instance)
+    /// <summary>
+    /// 删除指定实例。删除不可撤销，因此先弹出二次确认；
+    /// 确认为演示行为：<b>不会删除磁盘上的任何文件</b>。
+    /// </summary>
+    /// <param name="instance">目标实例。</param>
+    public async Task DeleteAsync(GameInstance instance)
     {
-        if (_allInstances.Remove(instance))
+        var confirmed = await _interaction.ConfirmAsync(
+            "删除实例",
+            $"确定要删除「{instance.Name}」吗？\n该实例的存档、模组与配置都会被移除，且无法撤销。",
+            "删除",
+            "取消");
+
+        if (!confirmed)
         {
-            ApplyQuery();
-            StatusMessage = $"已删除「{instance.Name}」（演示，未删除磁盘文件）";
+            StatusMessage = $"已取消删除「{instance.Name}」";
+            return;
         }
+
+        if (!_allInstances.Remove(instance))
+        {
+            return;
+        }
+
+        ApplyQuery();
+        StatusMessage = $"已删除「{instance.Name}」（演示，未删除磁盘文件）";
+
+        _interaction.Notify(
+            $"实例「{instance.Name}」已删除（演示，未删除磁盘文件）",
+            NotificationSeverity.Success,
+            "删除成功");
     }
 }

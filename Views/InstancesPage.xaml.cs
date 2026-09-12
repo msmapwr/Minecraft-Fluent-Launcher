@@ -43,11 +43,15 @@ public sealed partial class InstancesPage : Page
         }
     }
 
-    private void OnDeleteClick(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// 删除实例。删除前会弹二次确认，故此处需要异步等待；
+    /// 事件处理器使用 <c>async void</c> 是 WinUI 事件的标准写法。
+    /// </summary>
+    private async void OnDeleteClick(object sender, RoutedEventArgs e)
     {
         if (ResolveInstance(sender) is { } instance)
         {
-            ViewModel.Delete(instance);
+            await ViewModel.DeleteAsync(instance);
         }
     }
 

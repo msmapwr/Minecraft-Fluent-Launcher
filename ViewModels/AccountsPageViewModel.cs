@@ -74,9 +74,13 @@ public sealed partial class AccountsPageViewModel : ObservableObject
     /// <summary>离线账户数量标签。</summary>
     public string OfflineAccountCountLabel => $"{OfflineAccounts.Count} 个";
 
-    public AccountsPageViewModel(ILauncherDataService dataService)
+    /// <summary>破坏性操作的二次确认与操作结果通知。</summary>
+    private readonly IInteractionService _interaction;
+
+    public AccountsPageViewModel(ILauncherDataService dataService, IInteractionService interaction)
     {
         _dataService = dataService;
+        _interaction = interaction;
 
         NewOfflineName = string.Empty;
         StatusMessage = "准备就绪";
@@ -169,6 +173,8 @@ public sealed partial class AccountsPageViewModel : ObservableObject
         IsMicrosoftSignedIn = false;
         CurrentAccount = null;
         StatusMessage = "已注销微软账户（演示）";
+
+        _interaction.Notify("已注销微软账户（演示）", NotificationSeverity.Informational, "已注销");
     }
 
     /// <summary>添加离线账户（演示）。</summary>
@@ -180,18 +186,21 @@ public sealed partial class AccountsPageViewModel : ObservableObject
         if (name.Length == 0)
         {
             StatusMessage = "请输入离线账户名称";
+            _interaction.Notify("请先输入离线账户名称。", NotificationSeverity.Warning, "无法添加");
             return;
         }
 
         if (name.Length > 16)
         {
             StatusMessage = "名称过长：Minecraft 玩家名最多 16 个字符";
+            _interaction.Notify("Minecraft 玩家名最多 16 个字符。", NotificationSeverity.Warning, "无法添加");
             return;
         }
 
         if (OfflineAccounts.Any(account => string.Equals(account.Name, name, StringComparison.OrdinalIgnoreCase)))
         {
             StatusMessage = $"离线账户「{name}」已存在";
+            _interaction.Notify($"离线账户「{name}」已经存在了。", NotificationSeverity.Warning, "无法添加");
             return;
         }
 
@@ -203,6 +212,11 @@ public sealed partial class AccountsPageViewModel : ObservableObject
 
         NewOfflineName = string.Empty;
         StatusMessage = $"已添加离线账户「{name}」（演示，未写入磁盘）";
+
+        _interaction.Notify(
+            $"已添加离线账户「{name}」（演示，未写入磁盘）",
+            NotificationSeverity.Success,
+            "添加成功");
     }
 
     /// <summary>切换到指定离线账户（演示）。</summary>
@@ -233,11 +247,32 @@ public sealed partial class AccountsPageViewModel : ObservableObject
         };
 
         StatusMessage = $"已切换到离线账户「{used.Name}」（演示）";
+
+        _interaction.Notify(
+            $"当前账户已切换为「{used.Name}」（演示）",
+            NotificationSeverity.Informational,
+            "已切换");
     }
 
-    /// <summary>删除离线账户（演示）。</summary>
-    public void RemoveOfflineAccount(OfflineAccount account)
+    /// <summary>
+    /// 删除离线账户。删除不可撤销，因此先弹出二次确认；
+    /// 确认为演示行为：<b>不会删除磁盘上的任何数据</b>。
+    /// </summary>
+    /// <param name="account">目标离线账户。</param>
+    public async Task RemoveOfflineAccountAsync(OfflineAccount account)
     {
+        var confirmed = await _interaction.ConfirmAsync(
+            "删除离线账户",
+            $"确定要删除离线账户「{account.Name}」吗？\n删除后需要重新添加才能再次使用。",
+            "删除",
+            "取消");
+
+        if (!confirmed)
+        {
+            StatusMessage = $"已取消删除「{account.Name}」";
+            return;
+        }
+
         if (!OfflineAccounts.Remove(account))
         {
             return;
@@ -249,5 +284,10 @@ public sealed partial class AccountsPageViewModel : ObservableObject
         }
 
         StatusMessage = $"已删除离线账户「{account.Name}」（演示，未删除磁盘数据）";
+
+        _interaction.Notify(
+            $"离线账户「{account.Name}」已删除（演示，未删除磁盘数据）",
+            NotificationSeverity.Success,
+            "删除成功");
     }
 }

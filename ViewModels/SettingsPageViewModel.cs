@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WINUI.Models;
@@ -138,10 +139,17 @@ public sealed partial class SettingsPageViewModel : ObservableObject
     /// <summary>手动 Java 路径是否可编辑。</summary>
     public bool IsJavaPathEditable => !AutoDetectJava;
 
-    public SettingsPageViewModel(ISettingsService settingsService, IThemeService themeService)
+    /// <summary>破坏性操作的二次确认与操作结果通知。</summary>
+    private readonly IInteractionService _interaction;
+
+    public SettingsPageViewModel(
+        ISettingsService settingsService,
+        IThemeService themeService,
+        IInteractionService interaction)
     {
         _settingsService = settingsService;
         _themeService = themeService;
+        _interaction = interaction;
         _settings = settingsService.Settings;
 
         StatusMessage = "设置会自动保存";
@@ -292,10 +300,24 @@ public sealed partial class SettingsPageViewModel : ObservableObject
     private void OpenDataDirectory()
         => StatusMessage = $"（演示）将打开：{DataDirectory}";
 
-    /// <summary>恢复默认设置。</summary>
+    /// <summary>
+    /// 恢复默认设置。会覆盖当前的全部设置项，因此先弹出二次确认。
+    /// </summary>
     [RelayCommand]
-    private void ResetSettings()
+    private async Task ResetSettingsAsync()
     {
+        var confirmed = await _interaction.ConfirmAsync(
+            "恢复默认设置",
+            "所有设置项都会恢复为初始值（主题、语言、界面动画、内存、下载源与日志级别等）。\n账户与实例数据不受影响，但此操作无法撤销。",
+            "恢复默认",
+            "取消");
+
+        if (!confirmed)
+        {
+            StatusMessage = "已取消恢复默认设置";
+            return;
+        }
+
         var defaults = new AppSettings();
 
         _settings.Version = defaults.Version;
@@ -318,6 +340,11 @@ public sealed partial class SettingsPageViewModel : ObservableObject
         _settingsService.Save();
 
         StatusMessage = "已恢复默认设置（不含账户与实例数据）";
+
+        _interaction.Notify(
+            "设置已恢复为默认值（不含账户与实例数据）",
+            NotificationSeverity.Success,
+            "已恢复默认");
     }
 
     /// <summary>把设置实例的当前值刷回界面。</summary>

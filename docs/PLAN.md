@@ -121,8 +121,8 @@
 |---|---|---|---|
 | 1 | 状态与通知基础设施 | `Models/PageState`、`Controls/StatePanel`、`Services/IInteractionService`、`Controls/NotificationHost` | ✅ 完成 |
 | 2 | 列表页接入加载 / 空 / 错误三态 | 下载 / 实例 / 模组 / 版本详情 | ✅ 完成 |
-| 3 | 破坏性操作二次确认 + 通知回填 | 删除实例、删除离线账户、恢复默认设置、清空下载队列 | ⏳ 进行中 |
-| 4 | 页面过渡与列表渐入 + 动画开关生效 | `Services/IAnimationService`、`Controls/AnimationHelper` | ⬜ |
+| 3 | 破坏性操作二次确认 + 通知回填 | 删除实例、删除离线账户、恢复默认设置、清空下载队列 | ✅ 完成 |
+| 4 | 页面过渡与列表渐入 + 动画开关生效 | `Services/IAnimationService`、`Controls/AnimationHelper` | ⏳ 进行中 |
 | 5 | 三档响应式断点 | 外壳侧边栏 + 各页布局 | ⬜ |
 | 6 | 统一主题状态源 | 侧边栏与设置页共享同一个主题状态 | ⬜ |
 

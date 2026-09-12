@@ -100,9 +100,13 @@ public sealed partial class ModsPageViewModel : PageViewModelBase
             ? "把 .jar 文件放进该实例的 mods 目录即可被识别（本页为演示数据）。"
             : "没有符合当前搜索与筛选条件的模组，试试换个关键字。";
 
-    public ModsPageViewModel(ILauncherDataService dataService)
+    /// <summary>操作结果通知。</summary>
+    private readonly IInteractionService _interaction;
+
+    public ModsPageViewModel(ILauncherDataService dataService, IInteractionService interaction)
     {
         _dataService = dataService;
+        _interaction = interaction;
 
         SearchText = string.Empty;
         StatusMessage = "准备就绪";
@@ -287,37 +291,69 @@ public sealed partial class ModsPageViewModel : PageViewModelBase
         OnPropertyChanged(nameof(Summary));
     }
 
-    /// <summary>启用全部模组（演示）。</summary>
+    /// <summary>启用全部模组（演示）。批量操作会影响全部模组，因此给出明确反馈。</summary>
     [RelayCommand]
     private void EnableAll()
     {
+        if (_allMods.Count == 0)
+        {
+            StatusMessage = "当前没有可操作的模组";
+            return;
+        }
+
         foreach (var mod in _allMods)
         {
             mod.IsEnabled = true;
         }
 
         StatusMessage = "已启用全部模组（演示，未改动文件）";
+
+        _interaction.Notify(
+            $"已启用 {_allMods.Count} 个模组（演示，未改动任何文件）",
+            NotificationSeverity.Success,
+            "已全部启用");
     }
 
     /// <summary>禁用全部模组（演示）。</summary>
     [RelayCommand]
     private void DisableAll()
     {
+        if (_allMods.Count == 0)
+        {
+            StatusMessage = "当前没有可操作的模组";
+            return;
+        }
+
         foreach (var mod in _allMods)
         {
             mod.IsEnabled = false;
         }
 
         StatusMessage = "已禁用全部模组（演示，未改动文件）";
+
+        _interaction.Notify(
+            $"已禁用 {_allMods.Count} 个模组（演示，未改动任何文件）",
+            NotificationSeverity.Success,
+            "已全部禁用");
     }
 
     /// <summary>检查更新（演示）。</summary>
     [RelayCommand]
     private void CheckUpdates()
     {
-        StatusMessage = UpdatableCount == 0
-            ? "全部模组均为最新版本（演示）"
-            : $"发现 {UpdatableCount} 个可更新模组（演示，未下载）";
+        if (UpdatableCount == 0)
+        {
+            StatusMessage = "全部模组均为最新版本（演示）";
+            _interaction.Notify("全部模组均为最新版本（演示）", NotificationSeverity.Informational, "没有可用更新");
+            return;
+        }
+
+        StatusMessage = $"发现 {UpdatableCount} 个可更新模组（演示，未下载）";
+
+        _interaction.Notify(
+            $"发现 {UpdatableCount} 个可更新的模组（演示，未下载）",
+            NotificationSeverity.Informational,
+            "检查完成");
     }
 
     /// <summary>打开模组目录（演示）。</summary>

@@ -25,11 +25,15 @@ public sealed partial class AccountsPage : Page
         }
     }
 
-    private void OnRemoveOfflineClick(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// 删除离线账户。删除前会弹二次确认，故此处需要异步等待；
+    /// 事件处理器使用 <c>async void</c> 是 WinUI 事件的标准写法。
+    /// </summary>
+    private async void OnRemoveOfflineClick(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement { Tag: OfflineAccount account })
         {
-            ViewModel.RemoveOfflineAccount(account);
+            await ViewModel.RemoveOfflineAccountAsync(account);
         }
     }
 }
