@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 新增应用外壳：主窗口改为 `NavigationView` + 内容 `Frame`，侧边栏提供启动 / 实例 / 下载 / 模组 / 账户 / 设置 / 日志 / 关于八个入口。
 - 新增导航服务 `INavigationService` / `NavigationService`（路由键 → 页面类型，未知键安全返回）。
 - 新增 8 个页面占位：`Views/LaunchPage`、`InstancesPage`、`DownloadsPage`、`ModsPage`、`AccountsPage`、`SettingsPage`、`LogsPage`、`AboutPage`。
+- 新增自定义标题栏：内容延伸进标题栏区域，窗口按钮背景透明以露出 Mica 材质，标题栏显示应用图标与名称。
 
 ### Changed
 
