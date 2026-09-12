@@ -12,25 +12,30 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
+    <!-- 设计系统预览面：将在「应用外壳」阶段被导航框架替换 -->
     <Grid>
-        <StackPanel
+        <Border
+            Margin="{StaticResource SpaceXl}"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Spacing="{StaticResource SpaceSm}">
-            <TextBlock
-                HorizontalAlignment="Center"
-                FontFamily="{StaticResource AppDisplayFontFamily}"
-                FontSize="{StaticResource FontSizeDisplay}"
-                FontWeight="SemiBold"
-                Foreground="{ThemeResource AppTextPrimaryBrush}"
-                Text="{x:Bind ViewModel.AppTitle, Mode=OneWay}" />
-            <TextBlock
-                HorizontalAlignment="Center"
-                FontFamily="{StaticResource AppFontFamily}"
-                FontSize="{StaticResource FontSizeBody}"
-                Foreground="{ThemeResource AppTextSecondaryBrush}"
-                Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
-        </StackPanel>
+            Style="{StaticResource AppCardStyle}">
+            <StackPanel MaxWidth="420" Spacing="{StaticResource SpaceMd}">
+                <TextBlock
+                    Style="{StaticResource AppPageTitleStyle}"
+                    Text="{x:Bind ViewModel.AppTitle, Mode=OneWay}" />
+                <TextBlock
+                    Style="{StaticResource AppBodyTextStyle}"
+                    Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
+                <TextBlock
+                    Style="{StaticResource AppCaptionTextStyle}"
+                    Text="设计系统预览 · 应用外壳将在后续阶段替换本页" />
+                <Button
+                    HorizontalAlignment="Left"
+                    Command="{x:Bind ViewModel.PreviewCommand}"
+                    Content="预览主按钮"
+                    Style="{StaticResource AppAccentButtonStyle}" />
+            </StackPanel>
+        </Border>
 
         <ComboBox
             Margin="{StaticResource PagePadding}"

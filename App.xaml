@@ -10,6 +10,8 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!-- 设计令牌：颜色、间距、圆角、字号、字体 -->
                 <ResourceDictionary Source="ms-appx:///Themes/Tokens.xaml" />
+                <!-- 基础控件样式（依赖上面的令牌） -->
+                <ResourceDictionary Source="ms-appx:///Themes/Controls.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
 using System.Linq;
 using WINUI.Models;
@@ -47,4 +48,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     /// <summary>选中项变化时立即应用主题。</summary>
     partial void OnSelectedThemeOptionChanged(ThemeOption value) => _themeService.SetTheme(value.Value);
+
+    /// <summary>预览主按钮样式的占位命令（后续由真实业务命令替换）。</summary>
+    [RelayCommand]
+    private void Preview() => StatusText = "交互链路正常：命令与绑定均已生效";
 }
