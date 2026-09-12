@@ -142,14 +142,19 @@ public sealed partial class SettingsPageViewModel : ObservableObject
     /// <summary>破坏性操作的二次确认与操作结果通知。</summary>
     private readonly IInteractionService _interaction;
 
+    /// <summary>「界面动画」开关的真正持有者，切换后立即广播到界面。</summary>
+    private readonly IAnimationService _animation;
+
     public SettingsPageViewModel(
         ISettingsService settingsService,
         IThemeService themeService,
-        IInteractionService interaction)
+        IInteractionService interaction,
+        IAnimationService animation)
     {
         _settingsService = settingsService;
         _themeService = themeService;
         _interaction = interaction;
+        _animation = animation;
         _settings = settingsService.Settings;
 
         StatusMessage = "设置会自动保存";
@@ -204,8 +209,16 @@ public sealed partial class SettingsPageViewModel : ObservableObject
 
     partial void OnEnableAnimationsChanged(bool value)
     {
-        _settings.EnableAnimations = value;
-        Persist();
+        if (_isLoading)
+        {
+            return;
+        }
+
+        // 动画服务负责落盘并广播：页面过渡与内容渐入会立即随之启停，无需重启。
+        _animation.SetEnabled(value);
+        StatusMessage = value
+            ? "界面动画已开启"
+            : "界面动画已关闭（页面过渡与内容渐入不再播放）";
     }
 
     partial void OnShowSnapshotsChanged(bool value)
@@ -337,6 +350,7 @@ public sealed partial class SettingsPageViewModel : ObservableObject
 
         SyncFromSettings();
         _themeService.SetTheme(defaults.Theme);
+        _animation.SetEnabled(defaults.EnableAnimations);
         _settingsService.Save();
 
         StatusMessage = "已恢复默认设置（不含账户与实例数据）";

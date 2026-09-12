@@ -1,3 +1,4 @@
+using System;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -16,17 +17,20 @@ public sealed partial class MainWindow : Window
 
     private readonly INavigationService _navigation;
     private readonly IInteractionService _interaction;
+    private readonly IAnimationService _animation;
 
     public MainWindow(
         MainWindowViewModel viewModel,
         IThemeService themeService,
         INavigationService navigationService,
-        IInteractionService interactionService)
+        IInteractionService interactionService,
+        IAnimationService animationService)
     {
         // x:Bind 在 InitializeComponent 期间求值，必须先赋值 ViewModel。
         ViewModel = viewModel;
         _navigation = navigationService;
         _interaction = interactionService;
+        _animation = animationService;
         InitializeComponent();
         Title = viewModel.AppTitle;
 
@@ -42,10 +46,18 @@ public sealed partial class MainWindow : Window
 
         _navigation.Initialize(ContentFrame);
 
+        // 页面过渡跟随「界面动画」开关：切换后立即生效，无需重启。
+        _animation.ApplyFrameTransition(ContentFrame);
+        _animation.Changed += OnAnimationSettingChanged;
+
         // 默认打开启动页，并同步侧边栏选中项。
         _navigation.Navigate("launch");
         ShellNavigation.SelectedItem = ShellNavigation.MenuItems[0];
     }
+
+    /// <summary>「界面动画」开关变化时，立即更新导航帧的页面过渡。</summary>
+    private void OnAnimationSettingChanged(object? sender, EventArgs e)
+        => _animation.ApplyFrameTransition(ContentFrame);
 
     /// <summary>内容进入可视树后，把 XamlRoot 交给交互服务，ContentDialog 才能显示。</summary>
     private void OnRootLoaded(object sender, RoutedEventArgs e)

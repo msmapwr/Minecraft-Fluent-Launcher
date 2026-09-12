@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WINUI.Views;
 
@@ -34,6 +35,10 @@ public sealed class NavigationService : INavigationService
 
     private Frame? _frame;
 
+    private readonly IAnimationService _animation;
+
+    public NavigationService(IAnimationService animation) => _animation = animation;
+
     /// <inheritdoc />
     public string? CurrentKey { get; private set; }
 
@@ -65,6 +70,13 @@ public sealed class NavigationService : INavigationService
             return false;
         }
 
+        // 页面内容渐入（受设置页「界面动画」开关控制；关闭时不产生任何效果）。
+        // 页面由 Frame 反射创建、每次导航都是新实例，因此无需担心重复挂载。
+        if (_frame.Content is UIElement page)
+        {
+            _animation.ApplyEntrance(page);
+        }
+
         _history.Add(CurrentKey);
         CurrentKey = key;
         return true;
@@ -79,6 +91,12 @@ public sealed class NavigationService : INavigationService
         }
 
         _frame.GoBack();
+
+        // 返回时同样播放内容渐入，与前进方向保持一致的观感。
+        if (_frame.Content is UIElement page)
+        {
+            _animation.ApplyEntrance(page);
+        }
 
         if (_history.Count > 0)
         {
