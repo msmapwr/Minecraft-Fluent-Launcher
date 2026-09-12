@@ -20,7 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 新增设置持久化：`ISettingsService` / `JsonSettingsService` 把设置写入 `%LOCALAPPDATA%\MinecraftLauncher\settings.json`，使用源生成 JSON 上下文以保证裁剪安全；主题偏好在下次启动时恢复。
 - 新增基础控件样式 `Themes/Controls.xaml`：页面标题 / 小节标题 / 正文 / 说明四档文本样式、卡片样式，以及强调色主按钮样式（含悬停、按下、禁用状态）；主窗口改为设计系统预览面。
 - 新增图标体系 `Themes/Icons.xaml`：统一使用 Segoe Fluent Icons（回退 Segoe MDL2 Assets），集中定义导航 / 操作 / 信息类字形，并提供 `AppIconStyle`。
+- 新增应用外壳：主窗口改为 `NavigationView` + 内容 `Frame`，侧边栏提供启动 / 实例 / 下载 / 模组 / 账户 / 设置 / 日志 / 关于八个入口。
+- 新增导航服务 `INavigationService` / `NavigationService`（路由键 → 页面类型，未知键安全返回）。
+- 新增 8 个页面占位：`Views/LaunchPage`、`InstancesPage`、`DownloadsPage`、`ModsPage`、`AccountsPage`、`SettingsPage`、`LogsPage`、`AboutPage`。
 
 ### Changed
+
+- 主窗口不再是设计系统预览面，改为承载导航外壳；主题切换入口移入侧边栏底部。
 
 - `WINUI.csproj` 的 `LangVersion` 设为 `latest`，以启用 C# partial property（避免 `MVVMTK0045` 警告）。

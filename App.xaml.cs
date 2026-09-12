@@ -33,6 +33,7 @@ namespace WINUI
             // Services
             services.AddSingleton<ISettingsService, JsonSettingsService>();
             services.AddSingleton<IThemeService, ThemeService>();
+            services.AddSingleton<INavigationService, NavigationService>();
 
             // ViewModels
             services.AddSingleton<MainWindowViewModel>();

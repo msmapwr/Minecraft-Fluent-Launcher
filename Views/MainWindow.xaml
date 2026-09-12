@@ -12,45 +12,70 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <!-- 设计系统预览面：将在「应用外壳」阶段被导航框架替换 -->
-    <Grid>
-        <Border
-            Margin="{StaticResource SpaceXl}"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Style="{StaticResource AppCardStyle}">
-            <StackPanel MaxWidth="420" Spacing="{StaticResource SpaceMd}">
-                <TextBlock
-                    Style="{StaticResource AppPageTitleStyle}"
-                    Text="{x:Bind ViewModel.AppTitle, Mode=OneWay}" />
-                <TextBlock
-                    Style="{StaticResource AppBodyTextStyle}"
-                    Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
-                <TextBlock
-                    Style="{StaticResource AppCaptionTextStyle}"
-                    Text="设计系统预览 · 应用外壳将在后续阶段替换本页" />
-                <Button
-                    HorizontalAlignment="Left"
-                    Command="{x:Bind ViewModel.PreviewCommand}"
-                    Style="{StaticResource AppAccentButtonStyle}">
-                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
-                        <FontIcon
-                            FontFamily="{StaticResource AppIconFontFamily}"
-                            FontSize="{StaticResource FontSizeIcon}"
-                            Glyph="{StaticResource IconPlayGlyph}" />
-                        <TextBlock Text="预览主按钮" />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </Border>
+    <!-- 应用外壳：左侧导航 + 内容 Frame。各 NavigationViewItem 的 Tag 即路由键。 -->
+    <NavigationView
+        x:Name="ShellNavigation"
+        AlwaysShowHeader="False"
+        IsBackButtonVisible="Collapsed"
+        IsPaneOpen="True"
+        IsSettingsVisible="False"
+        ItemInvoked="OnNavigationItemInvoked"
+        OpenPaneLength="220"
+        PaneDisplayMode="Left">
 
-        <ComboBox
-            Margin="{StaticResource PagePadding}"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            DisplayMemberPath="DisplayName"
-            Header="主题"
-            ItemsSource="{x:Bind ViewModel.ThemeOptions}"
-            SelectedItem="{x:Bind ViewModel.SelectedThemeOption, Mode=TwoWay}" />
-    </Grid>
+        <NavigationView.MenuItems>
+            <NavigationViewItem Content="启动" Tag="launch">
+                <NavigationViewItem.Icon>
+                    <FontIcon FontFamily="{StaticResource AppIconFontFamily}" Glyph="{StaticResource IconPlayGlyph}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="实例" Tag="instances">
+                <NavigationViewItem.Icon>
+                    <FontIcon FontFamily="{StaticResource AppIconFontFamily}" Glyph="{StaticResource IconLibraryGlyph}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="下载" Tag="downloads">
+                <NavigationViewItem.Icon>
+                    <FontIcon FontFamily="{StaticResource AppIconFontFamily}" Glyph="{StaticResource IconDownloadGlyph}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="模组" Tag="mods">
+                <NavigationViewItem.Icon>
+                    <FontIcon FontFamily="{StaticResource AppIconFontFamily}" Glyph="{StaticResource IconListGlyph}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="账户" Tag="accounts">
+                <NavigationViewItem.Icon>
+                    <FontIcon FontFamily="{StaticResource AppIconFontFamily}" Glyph="{StaticResource IconAccountGlyph}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="设置" Tag="settings">
+                <NavigationViewItem.Icon>
+                    <FontIcon FontFamily="{StaticResource AppIconFontFamily}" Glyph="{StaticResource IconSettingsGlyph}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="日志" Tag="logs">
+                <NavigationViewItem.Icon>
+                    <FontIcon FontFamily="{StaticResource AppIconFontFamily}" Glyph="{StaticResource IconLogGlyph}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="关于" Tag="about">
+                <NavigationViewItem.Icon>
+                    <FontIcon FontFamily="{StaticResource AppIconFontFamily}" Glyph="{StaticResource IconInfoGlyph}" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+        </NavigationView.MenuItems>
+
+        <NavigationView.PaneFooter>
+            <ComboBox
+                Margin="8,4,8,12"
+                HorizontalAlignment="Stretch"
+                DisplayMemberPath="DisplayName"
+                Header="主题"
+                ItemsSource="{x:Bind ViewModel.ThemeOptions}"
+                SelectedItem="{x:Bind ViewModel.SelectedThemeOption, Mode=TwoWay}" />
+        </NavigationView.PaneFooter>
+
+        <Frame x:Name="ContentFrame" />
+    </NavigationView>
 </Window>
