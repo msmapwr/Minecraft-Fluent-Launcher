@@ -198,6 +198,129 @@ public sealed class MockLauncherDataService : ILauncherDataService
         },
     ];
 
+    private static readonly IReadOnlyList<DownloadItem> DownloadItems =
+    [
+        new()
+        {
+            Id = "mc-1.21.4",
+            Name = "Minecraft 1.21.4",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.21.4",
+            SizeMb = 312,
+            DownloadCount = 128_400,
+            Description = "最新正式版，包含「苍园」生物群系与两种木质建材变体。",
+            IsInstalled = true,
+        },
+        new()
+        {
+            Id = "mc-1.21.1",
+            Name = "Minecraft 1.21.1",
+            Author = "Mojang Studios",
+            Category = DownloadCategory.GameVersion,
+            Version = "1.21.1",
+            SizeMb = 306,
+            DownloadCount = 96_200,
+            Description = "模组生态最成熟的 1.21 版本，推荐用于整合包。",
+            IsInstalled = true,
+        },
+        new()
+        {
+            Id = "loader-neoforge",
+            Name = "NeoForge",
+            Author = "NeoForged",
+            Category = DownloadCategory.Loader,
+            Version = "21.1.72 / 21.4.x",
+            SizeMb = 24,
+            DownloadCount = 42_800,
+            Description = "Forge 的社区继任者，支持 1.20.1 及以上的现代模组加载。",
+            IsInstalled = true,
+        },
+        new()
+        {
+            Id = "loader-fabric",
+            Name = "Fabric Loader",
+            Author = "FabricMC",
+            Category = DownloadCategory.Loader,
+            Version = "0.16.9",
+            SizeMb = 6,
+            DownloadCount = 88_500,
+            Description = "轻量、启动快、更新及时，适合性能向与小型模组。",
+            IsInstalled = true,
+        },
+        new()
+        {
+            Id = "mod-sodium",
+            Name = "Sodium",
+            Author = "CaffeineMC",
+            Category = DownloadCategory.Mod,
+            Version = "1.21.4",
+            SizeMb = 2,
+            DownloadCount = 61_300,
+            Description = "重写渲染管线，显著提升帧率与区块加载速度。",
+        },
+        new()
+        {
+            Id = "mod-jei",
+            Name = "Just Enough Items",
+            Author = "mezz",
+            Category = DownloadCategory.Mod,
+            Version = "1.20.1 – 1.21.4",
+            SizeMb = 3,
+            DownloadCount = 74_900,
+            Description = "物品与合成表查询，模组包必备的基础工具。",
+            IsInstalled = true,
+        },
+        new()
+        {
+            Id = "resource-faithful",
+            Name = "Faithful 32x",
+            Author = "Faithful Team",
+            Category = DownloadCategory.ResourcePack,
+            Version = "1.21.x",
+            SizeMb = 18,
+            DownloadCount = 52_100,
+            Description = "在原版风格基础上提升至 32x 分辨率的经典资源包。",
+        },
+        new()
+        {
+            Id = "shader-complementary",
+            Name = "Complementary Reimagined",
+            Author = "EminGT",
+            Category = DownloadCategory.Shader,
+            Version = "r5.3",
+            SizeMb = 12,
+            DownloadCount = 39_600,
+            Description = "兼顾性能与观感的写实光影，需搭配 Iris / OptiFine。",
+        },
+        new()
+        {
+            Id = "modpack-better-mc",
+            Name = "Better MC [FORGE]",
+            Author = "Luna Pixel Studios",
+            Category = DownloadCategory.Modpack,
+            Version = "1.20.1",
+            SizeMb = 1024,
+            DownloadCount = 23_400,
+            Description = "面向探索与冒险的整合包，含数百个模组与任务书。",
+        },
+        new()
+        {
+            Id = "world-skyblock",
+            Name = "SkyBlock 空岛生存",
+            Author = "社区地图",
+            Category = DownloadCategory.World,
+            Version = "1.21.x",
+            SizeMb = 42,
+            DownloadCount = 17_800,
+            Description = "经典空岛生存地图，附带自定义进度与商店系统。",
+        },
+    ];
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<DownloadItem>> GetDownloadItemsAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(DownloadItems);
+
     /// <inheritdoc />
     public Task<IReadOnlyList<GameVersion>> GetVersionsAsync(CancellationToken cancellationToken = default)
         => Task.FromResult(Versions);

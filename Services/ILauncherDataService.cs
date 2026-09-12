@@ -21,6 +21,9 @@ public interface ILauncherDataService
     /// <summary>获取已创建的实例列表。</summary>
     Task<IReadOnlyList<GameInstance>> GetInstancesAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>获取下载中心的可下载条目。</summary>
+    Task<IReadOnlyList<DownloadItem>> GetDownloadItemsAsync(CancellationToken cancellationToken = default);
+
     /// <summary>获取新闻与公告。</summary>
     Task<IReadOnlyList<NewsItem>> GetNewsAsync(CancellationToken cancellationToken = default);
 

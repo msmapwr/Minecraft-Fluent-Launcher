@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ④-3｜下载中心页**：`Views/DownloadsPage` 由占位页重做为下载中心（Mock 数据）。
+  - 工具栏：搜索（名称 / 作者 / 简介）、分类（全部 / 游戏版本 / 加载器 / 模组 / 资源包 / 光影 / 整合包 / 地图存档）、下载源（官方 / BMCLAPI / 社区镜像）与刷新。
+  - 主体：`ItemsRepeater` + `StackLayout` 条目列表，含名称、分类与安装状态徽章、简介、作者 / 版本 / 体积 / 下载次数，以及「下载」按钮。
+  - 侧栏：下载队列卡片，含逐条进度、整体队列进度、队列摘要与「开始下载 / 清空」；下载为定时递增的进度演示，**不产生网络请求、不写磁盘**。
+- 新增模型 `Models/DownloadItem`、`Models/DownloadCategory`、`Models/DownloadSource` 及对应标签扩展；新增 `ViewModels/DownloadTaskViewModel`。
+- 新增视图模型 `ViewModels/DownloadsPageViewModel`；`ILauncherDataService` 增加 `GetDownloadItemsAsync`。
 - **大更新 ④-2｜实例列表页**：`Views/InstancesPage` 由占位页重做为实例管理页（Mock 数据）。
   - 工具栏：搜索（实例名 / 版本号 / 加载器）、筛选（全部 / 已安装 / 未安装）、排序（最近游玩 / 名称 / 占用空间），三者均在内存中即时生效。
   - 主体：`ItemsRepeater` + `UniformGridLayout` 响应式卡片网格；每张卡片含实例图标、名称、最近游玩时间、版本与加载器、通道 / 安装状态 / 占用空间徽章、累计时长，以及「启动 / 目录 / 删除」操作。
