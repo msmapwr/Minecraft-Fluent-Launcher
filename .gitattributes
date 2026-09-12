@@ -1,0 +1,50 @@
+# ============================================================
+# Git 属性：统一换行与文本/二进制识别
+# ============================================================
+
+# 默认：自动识别文本，仓库内统一为 LF
+* text=auto
+
+# --- 源码 / 项目文件：文本，统一 LF ---
+*.cs        text diff=csharp
+*.xaml      text
+*.csproj    text
+*.slnx      text
+*.sln       text eol=crlf
+*.props     text
+*.targets   text
+*.json      text
+*.xml       text
+*.md        text
+*.yml       text
+*.yaml      text
+*.gitignore text
+*.gitattributes text
+
+# --- 构建脚本 ---
+*.ps1       text eol=crlf
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+*.sh        text eol=lf
+
+# --- 二进制：不做换行转换 ---
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.bmp       binary
+*.svg       text
+*.pfx       binary
+*.snk       binary
+*.dll       binary
+*.exe       binary
+*.lib       binary
+*.pdb       binary
+*.nupkg     binary
+*.msix      binary
+*.appx      binary
+
+# --- 语言统计：标记为文档/生成物 ---
+CHANGELOG.md linguist-documentation
+docs/*       linguist-documentation

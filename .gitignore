@@ -1,0 +1,120 @@
+# ============================================================
+# .NET / Visual Studio / WinUI 3 (Windows App SDK) 忽略规则
+# ============================================================
+
+# --- 构建产物 ---
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+*.binlog
+*.tlog
+*.Build.CppClean.log
+*.VC.db
+*.VC.VC.opendb
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# --- Visual Studio / IDE ---
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.rsuser
+.vscode/
+.idea/
+*.DotSettings.user
+
+# --- Roslyn / 分析器缓存 ---
+*.ruleset
+*.cache
+*.tvsconfig
+
+# --- WinUI 3 / Windows App SDK / MSIX 打包 ---
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_pkginfo.txt
+*.appx
+*.appxbundle
+*.appxupload
+*.msix
+*.msixbundle
+*.msixupload
+*.cer
+*.pfx
+*.pvk
+Generated\ Files/
+*.g.cs
+*.g.i.cs
+*.g.xbf
+*.xbf
+
+# --- NuGet ---
+*.nupkg
+*.snupkg
+packages/
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# --- 调试 / 测试 ---
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+coverage*.info
+TestResults/
+BenchmarkDotNet.Artifacts/
+
+# --- 本地环境 / 机密（AGENTS.md §7） ---
+.env
+.env.*
+!.env.example
+*.local.json
+appsettings.Development.json
+secrets/
+*.secrets.json
+
+# --- Agent / 会话数据（不纳入版本库） ---
+.workbuddy/
+
+# --- 操作系统 ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# --- 临时文件 ---
+*.bak
+*~
+*.orig
+*.rej
