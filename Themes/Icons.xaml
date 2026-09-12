@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    图标体系
+    ============================================================
+    统一使用 FontIcon + Segoe Fluent Icons（回退 Segoe MDL2 Assets）。
+    所有字形集中在此处定义，业务 XAML 通过 {StaticResource Icon*Glyph} 引用，
+    避免在页面里散落魔法码点。
+
+    用法：
+        <FontIcon Style="{StaticResource AppIconStyle}" Glyph="{StaticResource IconPlayGlyph}" />
+        尺寸/颜色需要覆盖时，不要再套 AppIconStyle，直接设置 FontSize / Foreground。
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ==================== 通用图标样式 ==================== -->
+    <Style x:Key="AppIconStyle" TargetType="FontIcon">
+        <Setter Property="FontFamily" Value="{StaticResource AppIconFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeIcon}" />
+        <Setter Property="Foreground" Value="{ThemeResource AppTextPrimaryBrush}" />
+    </Style>
+
+    <!-- ==================== 导航 ==================== -->
+    <x:String x:Key="IconHomeGlyph">&#xE80F;</x:String>
+    <x:String x:Key="IconLibraryGlyph">&#xE8F1;</x:String>
+    <x:String x:Key="IconListGlyph">&#xE8FD;</x:String>
+    <x:String x:Key="IconSettingsGlyph">&#xE713;</x:String>
+
+    <!-- ==================== 操作 ==================== -->
+    <x:String x:Key="IconPlayGlyph">&#xE768;</x:String>
+    <x:String x:Key="IconDownloadGlyph">&#xE896;</x:String>
+    <x:String x:Key="IconSearchGlyph">&#xE721;</x:String>
+    <x:String x:Key="IconRefreshGlyph">&#xE72C;</x:String>
+    <x:String x:Key="IconAddGlyph">&#xE710;</x:String>
+    <x:String x:Key="IconDeleteGlyph">&#xE74D;</x:String>
+    <x:String x:Key="IconFolderGlyph">&#xE8B7;</x:String>
+
+    <!-- ==================== 信息 ==================== -->
+    <x:String x:Key="IconAccountGlyph">&#xE77B;</x:String>
+    <x:String x:Key="IconLogGlyph">&#xE8A5;</x:String>
+    <x:String x:Key="IconInfoGlyph">&#xE946;</x:String>
+    <x:String x:Key="IconThemeGlyph">&#xE706;</x:String>
+
+</ResourceDictionary>

@@ -44,11 +44,14 @@
     <x:Double x:Key="FontSizeSubtitle">18</x:Double>
     <x:Double x:Key="FontSizeTitle">24</x:Double>
     <x:Double x:Key="FontSizeDisplay">32</x:Double>
+    <x:Double x:Key="FontSizeIcon">16</x:Double>
 
     <!-- ==================== 字体 ==================== -->
     <FontFamily x:Key="AppFontFamily">Segoe UI Variable Text, Segoe UI</FontFamily>
     <FontFamily x:Key="AppDisplayFontFamily">Segoe UI Variable Display, Segoe UI</FontFamily>
     <FontFamily x:Key="AppMonoFontFamily">Cascadia Mono, Consolas, Courier New</FontFamily>
+    <!-- 图标字体：优先 Segoe Fluent Icons，回退到 Segoe MDL2 Assets -->
+    <FontFamily x:Key="AppIconFontFamily">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
     <!-- ==================== 主题相关画笔 ==================== -->
     <ResourceDictionary.ThemeDictionaries>

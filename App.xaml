@@ -12,6 +12,8 @@
                 <ResourceDictionary Source="ms-appx:///Themes/Tokens.xaml" />
                 <!-- 基础控件样式（依赖上面的令牌） -->
                 <ResourceDictionary Source="ms-appx:///Themes/Controls.xaml" />
+                <!-- 图标体系 -->
+                <ResourceDictionary Source="ms-appx:///Themes/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

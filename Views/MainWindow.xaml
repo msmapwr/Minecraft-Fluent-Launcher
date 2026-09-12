@@ -32,8 +32,15 @@
                 <Button
                     HorizontalAlignment="Left"
                     Command="{x:Bind ViewModel.PreviewCommand}"
-                    Content="预览主按钮"
-                    Style="{StaticResource AppAccentButtonStyle}" />
+                    Style="{StaticResource AppAccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                        <FontIcon
+                            FontFamily="{StaticResource AppIconFontFamily}"
+                            FontSize="{StaticResource FontSizeIcon}"
+                            Glyph="{StaticResource IconPlayGlyph}" />
+                        <TextBlock Text="预览主按钮" />
+                    </StackPanel>
+                </Button>
             </StackPanel>
         </Border>
 
