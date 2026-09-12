@@ -43,5 +43,14 @@
     <x:String x:Key="IconLogGlyph">&#xE8A5;</x:String>
     <x:String x:Key="IconInfoGlyph">&#xE946;</x:String>
     <x:String x:Key="IconThemeGlyph">&#xE706;</x:String>
+    <x:String x:Key="IconCloseGlyph">&#xE711;</x:String>
+
+    <!-- ==================== 状态 ==================== -->
+    <!-- 空状态：默认「无内容」用 Package 图标，无匹配结果用放大镜 -->
+    <x:String x:Key="IconEmptyGlyph">&#xE7B8;</x:String>
+    <x:String x:Key="IconNoResultGlyph">&#xE721;</x:String>
+    <x:String x:Key="IconSuccessGlyph">&#xE73E;</x:String>
+    <x:String x:Key="IconWarningGlyph">&#xE7BA;</x:String>
+    <x:String x:Key="IconErrorGlyph">&#xEA39;</x:String>
 
 </ResourceDictionary>

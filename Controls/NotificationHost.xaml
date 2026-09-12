@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    通知宿主（NotificationHost）
+    ============================================================
+    订阅 IInteractionService.NotificationRequested，把通知渲染成一叠 InfoBar。
+    自身不画背景，因此空白区域不拦截鼠标事件；只有 InfoBar 本体可交互。
+    由 MainWindow 通过 Attach(...) 注入服务。
+-->
+<UserControl
+    x:Class="WINUI.Controls.NotificationHost"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:WINUI.ViewModels"
+    mc:Ignorable="d">
+
+    <ItemsControl ItemsSource="{x:Bind Items, Mode=OneWay}">
+        <ItemsControl.Transitions>
+            <TransitionCollection>
+                <EntranceThemeTransition FromVerticalOffset="12" />
+            </TransitionCollection>
+        </ItemsControl.Transitions>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:NotificationItemViewModel">
+                <InfoBar
+                    Margin="{StaticResource NotificationGap}"
+                    IsClosable="True"
+                    IsOpen="{x:Bind IsOpen, Mode=TwoWay}"
+                    Message="{x:Bind Message}"
+                    Severity="{x:Bind Severity}"
+                    Title="{x:Bind Title}" />
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

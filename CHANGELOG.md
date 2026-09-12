@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ⑤-1｜状态与通知基础设施**：为后续所有页面统一「加载 / 空 / 错误」三态与「对话框 / 通知」反馈，不再由各页面各自拼装。
+  - 新增模板化控件 `Controls/StatePanel`（样式 `Themes/StatePanel.xaml`）：在正常内容之上叠放加载层、空状态层、错误层，通过 `VisualStateManager` 切换可见性；暴露 `State` / `LoadingText` / `EmptyGlyph` / `EmptyTitle` / `EmptyText` / `ErrorGlyph` / `ErrorTitle` / `ErrorText` / `RetryText` / `RetryCommand` 等属性。错误层仅在提供 `RetryCommand` 时显示「重试」按钮。
+  - 新增 `Models/PageState`（`Content` / `Loading` / `Empty` / `Error`）。
+  - 新增服务 `Services/IInteractionService` / `Services/InteractionService`：`ConfirmAsync`（ContentDialog 二次确认，破坏性操作默认焦点落在「取消」且确认按钮标红）、`AlertAsync`（单按钮提示）、`Notify`（发出轻量通知）。多个对话框请求经信号量串行化，避免 WinUI 只允许单个 ContentDialog 的限制。
+  - 新增通知宿主 `Controls/NotificationHost`：订阅交互服务的通知事件，在窗口右下角渲染一叠 `InfoBar`，失败 / 警告停留更久，可手动关闭，自动消失后延迟移除以保留收起动画。宿主不绘制背景，空白区域不拦截鼠标事件。
+  - 新增 `Models/NotificationSeverity`、`Models/AppNotification`、`ViewModels/NotificationItemViewModel`。
+  - 新增破坏性操作按钮样式 `AppDangerButtonStyle`；`Themes/Icons.xaml` 增补关闭、空状态、无结果、成功、警告、错误共 6 个字形；`Themes/Tokens.xaml` 增补通知间距令牌。
+  - `MainWindow` 承载通知宿主并在内容进入可视树后把 `XamlRoot` 交给交互服务。
 - **大更新 ④-8｜下载中心扩展（分页 · 七类分类 · 版本详情）**：`Views/DownloadsPage` 增强，并新增二级页面 `Views/VersionDetailPage`。
   - 分类调整为 **版本 / 模组 / 资源包 / 光影 / 世界 / 数据包 / 整合包**（共 7 类）：移除独立的「模组加载器」分类（改为随版本安装）、「地图存档」更名「世界」、新增「数据包」。
   - 列表**分页**：数字页码（围绕当前页最多显示 7 个）+ 首页 / 上一页 / 下一页 / 末页；每页条数可选 10 / 20 / 50；筛选或搜索变化时自动回到第一页。

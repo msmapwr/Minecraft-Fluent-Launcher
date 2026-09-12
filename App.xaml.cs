@@ -44,6 +44,7 @@ namespace WINUI
             services.AddSingleton<IThemeService, ThemeService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IClipboardService, ClipboardService>();
+            services.AddSingleton<IInteractionService, InteractionService>();
 
             // 数据来源：UI 阶段使用 Mock 实现，接入真实启动核心时替换此处注册即可。
             services.AddSingleton<ILauncherDataService, MockLauncherDataService>();

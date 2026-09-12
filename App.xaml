@@ -14,6 +14,8 @@
                 <ResourceDictionary Source="ms-appx:///Themes/Controls.xaml" />
                 <!-- 图标体系 -->
                 <ResourceDictionary Source="ms-appx:///Themes/Icons.xaml" />
+                <!-- 状态容器样式（依赖令牌与文本样式） -->
+                <ResourceDictionary Source="ms-appx:///Themes/StatePanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

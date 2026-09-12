@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:WINUI.Controls"
     mc:Ignorable="d"
     Title="Minecraft Fluent Launcher">
 
@@ -12,7 +13,7 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -107,5 +108,19 @@
 
             <Frame x:Name="ContentFrame" />
         </NavigationView>
+
+        <!--
+            通知宿主：右下角的一叠 InfoBar。
+            放在 NavigationView 之后，因此在 Z 序上位于页面内容之上。
+            控件本身不画背景，空白处不拦截鼠标事件。
+        -->
+        <controls:NotificationHost
+            x:Name="NotificationArea"
+            Grid.Row="1"
+            Margin="0,0,20,44"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            MinWidth="300"
+            MaxWidth="420" />
     </Grid>
 </Window>

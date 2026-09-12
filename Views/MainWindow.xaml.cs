@@ -15,20 +15,28 @@ public sealed partial class MainWindow : Window
     public MainWindowViewModel ViewModel { get; }
 
     private readonly INavigationService _navigation;
+    private readonly IInteractionService _interaction;
 
     public MainWindow(
         MainWindowViewModel viewModel,
         IThemeService themeService,
-        INavigationService navigationService)
+        INavigationService navigationService,
+        IInteractionService interactionService)
     {
         // x:Bind 在 InitializeComponent 期间求值，必须先赋值 ViewModel。
         ViewModel = viewModel;
         _navigation = navigationService;
+        _interaction = interactionService;
         InitializeComponent();
         Title = viewModel.AppTitle;
 
         // 窗口内容就绪后再绑定根元素，主题切换即时生效。
-        themeService.Attach((FrameworkElement)Content);
+        var root = (FrameworkElement)Content;
+        themeService.Attach(root);
+
+        // 通知宿主与对话框需要在内容进入可视树后才有 XamlRoot。
+        NotificationArea.Attach(interactionService);
+        root.Loaded += OnRootLoaded;
 
         SetupCustomTitleBar();
 
@@ -37,6 +45,15 @@ public sealed partial class MainWindow : Window
         // 默认打开启动页，并同步侧边栏选中项。
         _navigation.Navigate("launch");
         ShellNavigation.SelectedItem = ShellNavigation.MenuItems[0];
+    }
+
+    /// <summary>内容进入可视树后，把 XamlRoot 交给交互服务，ContentDialog 才能显示。</summary>
+    private void OnRootLoaded(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).XamlRoot is { } xamlRoot)
+        {
+            _interaction.AttachRoot(xamlRoot);
+        }
     }
 
     /// <summary>

@@ -32,6 +32,8 @@
     <Thickness x:Key="CardPadding">16</Thickness>
     <Thickness x:Key="ControlPadding">12,8</Thickness>
     <Thickness x:Key="TitleBarPadding">12,0,0,0</Thickness>
+    <!-- 通知宿主中相邻 InfoBar 的间距（仅底部） -->
+    <Thickness x:Key="NotificationGap">0,0,0,8</Thickness>
 
     <!-- ==================== 圆角 ==================== -->
     <CornerRadius x:Key="RadiusSm">4</CornerRadius>
