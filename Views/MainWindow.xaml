@@ -14,6 +14,45 @@
     </Window.SystemBackdrop>
 
     <Grid x:Name="RootGrid">
+        <VisualStateManager.VisualStateGroups>
+            <!--
+                外壳三档（按窗口宽度）：
+                ≥1000   侧栏完整展开
+                640–999 侧栏折叠成图标栏
+                <640    极简汉堡（点开后覆盖内容）
+                约定：命中范围小的状态写在前，最后一个命中者生效。
+            -->
+            <VisualStateGroup x:Name="ShellStates">
+                <VisualState x:Name="NarrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ShellNavigation.PaneDisplayMode" Value="LeftMinimal" />
+                        <Setter Target="ShellNavigation.IsPaneOpen" Value="False" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="MediumState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="640" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ShellNavigation.PaneDisplayMode" Value="LeftCompact" />
+                        <Setter Target="ShellNavigation.IsPaneOpen" Value="False" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="WideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1000" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ShellNavigation.PaneDisplayMode" Value="Left" />
+                        <Setter Target="ShellNavigation.IsPaneOpen" Value="True" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

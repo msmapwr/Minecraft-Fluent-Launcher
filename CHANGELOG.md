@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ⑤-5｜三档响应式断点**：窗口尺寸变化时外壳与页面布局随之自适应。
+  - **外壳侧边栏三档**（`MainWindow`）：窗口 ≥1000 时侧栏完整展开（`Left`）；640–999 时折叠为图标栏（`LeftCompact`）；<640 时进入极简汉堡（`LeftMinimal`），点击后以浮层覆盖内容。三档均通过 `AdaptiveTrigger` 驱动 `NavigationView.PaneDisplayMode` 与 `IsPaneOpen`。
+  - **六个双列页面窄屏堆叠**：下载中心（下载队列）、模组（详情面板）、版本详情（安装摘要）、启动页（账户与新闻）、账户（当前账户与须知）、关于（运行环境与链接）。窗口 <640 时右侧栏整列移动到主内容下方，主列占满宽度；≥640 时恢复双列。
+  - 实现约定统一：每个双列主体 Grid 增加「0 高度的第二行」与命名列，窄屏状态把侧栏移动到第二行第一列，宽屏状态显式恢复原值（避免切回宽窗口时布局残留窄屏状态）；状态组直接挂在主体 Grid 上，`AdaptiveTrigger` 按窗口宽度触发。
+  - 状态命名约定：命中范围小的状态写在前、范围大的写在后（后命中者生效），三档与两档布局均遵循该顺序。
+  - 实例页的卡片网格使用 `UniformGridLayout`，本身已随宽度重排，无需额外断点。
 - **大更新 ⑤-4｜页面过渡与内容渐入，并让「界面动画」开关真正生效**：此前设置页的「界面动画」开关只写文件、重启后也不影响任何过渡，现在成为全应用的动画总开关。
   - 新增服务 `Services/IAnimationService` / `Services/AnimationService`：统一持有开关状态、负责持久化与广播，并提供两个应用入口——`ApplyFrameTransition`（导航 Frame 的页面过渡）与 `ApplyEntrance`（页面内容的渐入）。
   - **页面过渡**：主窗口的导航 Frame 挂上 `NavigationThemeTransition`，页面间切换播放系统过渡；开关变化时通过 `Changed` 事件立即增删，无需重启。
