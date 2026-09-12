@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ⑥-3｜MSIX 打包与 GitHub Release（v0.1.0）**：新增 `.github/workflows/release.yml`，推送 `v*` 标签自动发布。
+  - 以 `dotnet publish` 产出 **self-contained（含 Windows App SDK 运行时）x64 未签名 MSIX** 与 **便携 zip**，附到 GitHub Release（自动生成发布说明）。未签名 MSIX 需开发者模式或受信证书才能安装；日常使用建议解压 zip 直接运行。
+  - 版本基线定为 **0.1.0**（csproj `Version` 与 MSIX manifest 同步），CHANGELOG 收版为 `0.1.0` 段。
+- **大更新 ⑥-2｜GitHub Actions CI**：新增 `.github/workflows/ci.yml`——push / PR 到 `main` 或手动触发时，在 `windows-latest` 上执行 Release x64 构建（0 警告门槛）+ 全量单元测试，测试结果上传为 Artifact；README 加 CI 徽章。
 - **大更新 ⑥-1｜核心逻辑单元测试（xUnit）**：新增测试项目 `tests/WINUI.Tests`，覆盖不依赖 UI 线程的纯逻辑，**32 个测试全部通过**。
   - 覆盖范围：`MockLauncherDataService`（数据规模、加载器可用性规则——1.21.x 无 Forge、1.20.1 四加载器齐备、1.12.2 无 NeoForge、快照/远古/非法版本返回空、加载器推荐版本必须在其版本列表内）、`ThemeService`（单一状态源：持久化、`ThemeChanged` 广播、同值不广播不落盘、未绑定根元素安全）、`NavigationService`（未初始化/未知路由安全短路）、`PageViewModelBase`（加载/内容/空/错误四态转换、错误与加载态不被筛选覆盖）、`AppSettings`（默认值契约、JSON 序列化往返、旧文件缺字段回退默认值）。
   - **踩坑修复**：SDK 默认通配会把 `tests\` 下源码误编进主项目（主项目无 xunit 引用 → CS0246 → XAML 连锁编译错误），已在 `WINUI.csproj` 显式 `Compile Remove="tests\**\*.cs"`。
