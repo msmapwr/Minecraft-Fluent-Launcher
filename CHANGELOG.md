@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ⑤-6｜统一主题状态源**：侧边栏底部与设置页的两处主题下拉不再各持一份状态，任一处切换另一处立即同步。
+  - `IThemeService` 成为主题的单一状态源：新增共享选项列表 `Options`（跟随系统 / 浅色 / 深色，单一来源）与变更广播事件 `ThemeChanged`（仅在实际发生变化时触发）。
+  - `MainWindowViewModel` 与 `SettingsPageViewModel` 的主题选项列表均改为引用服务的 `Options`，并订阅广播：在设置页切主题时侧边栏下拉同步选中，在侧边栏切主题时设置页下拉同步选中（同步期间抑制回写，避免循环触发，也不误刷状态栏文案）。
+  - 「恢复默认设置」同样走服务广播，主题恢复默认时两处一并刷新。
 - **大更新 ⑤-5｜三档响应式断点**：窗口尺寸变化时外壳与页面布局随之自适应。
   - **外壳侧边栏三档**（`MainWindow`）：窗口 ≥1000 时侧栏完整展开（`Left`）；640–999 时折叠为图标栏（`LeftCompact`）；<640 时进入极简汉堡（`LeftMinimal`），点击后以浮层覆盖内容。三档均通过 `AdaptiveTrigger` 驱动 `NavigationView.PaneDisplayMode` 与 `IsPaneOpen`。
   - **六个双列页面窄屏堆叠**：下载中心（下载队列）、模组（详情面板）、版本详情（安装摘要）、启动页（账户与新闻）、账户（当前账户与须知）、关于（运行环境与链接）。窗口 <640 时右侧栏整列移动到主内容下方，主列占满宽度；≥640 时恢复双列。

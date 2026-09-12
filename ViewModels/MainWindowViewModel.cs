@@ -22,13 +22,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial ThemeOption SelectedThemeOption { get; set; }
 
-    /// <summary>可选主题列表。</summary>
-    public IReadOnlyList<ThemeOption> ThemeOptions { get; } =
-    [
-        new(AppTheme.System, "跟随系统"),
-        new(AppTheme.Light, "浅色"),
-        new(AppTheme.Dark, "深色"),
-    ];
+    /// <summary>正在根据主题服务广播同步选中项，避免回环写回。</summary>
+    private bool _isSyncingTheme;
+
+    /// <summary>可选主题列表（与设置页共用主题服务的单一来源）。</summary>
+    public IReadOnlyList<ThemeOption> ThemeOptions { get; }
 
     public MainWindowViewModel(IThemeService themeService)
     {
@@ -36,10 +34,43 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         AppTitle = AppInfo.DisplayName;
 
+        // 选项列表来自主题服务，保证与设置页完全一致。
+        ThemeOptions = themeService.Options;
+
         // 与已保存的主题偏好保持一致。
         SelectedThemeOption = ThemeOptions.First(option => option.Value == themeService.Current);
+
+        // 设置页切换主题时，同步侧边栏下拉的选中项。
+        themeService.ThemeChanged += OnThemeServiceChanged;
     }
 
     /// <summary>选中项变化时立即应用主题。</summary>
-    partial void OnSelectedThemeOptionChanged(ThemeOption value) => _themeService.SetTheme(value.Value);
+    partial void OnSelectedThemeOptionChanged(ThemeOption value)
+    {
+        if (_isSyncingTheme)
+        {
+            return;
+        }
+
+        _themeService.SetTheme(value.Value);
+    }
+
+    private void OnThemeServiceChanged(object? sender, AppTheme theme)
+    {
+        var option = ThemeOptions.FirstOrDefault(item => item.Value == theme);
+        if (option is null || ReferenceEquals(option, SelectedThemeOption))
+        {
+            return;
+        }
+
+        _isSyncingTheme = true;
+        try
+        {
+            SelectedThemeOption = option;
+        }
+        finally
+        {
+            _isSyncingTheme = false;
+        }
+    }
 }

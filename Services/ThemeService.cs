@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using WINUI.Models;
 
@@ -19,6 +21,17 @@ public sealed class ThemeService : IThemeService
     public AppTheme Current { get; private set; }
 
     /// <inheritdoc />
+    public IReadOnlyList<ThemeOption> Options { get; } =
+    [
+        new(AppTheme.System, "跟随系统"),
+        new(AppTheme.Light, "浅色"),
+        new(AppTheme.Dark, "深色"),
+    ];
+
+    /// <inheritdoc />
+    public event EventHandler<AppTheme>? ThemeChanged;
+
+    /// <inheritdoc />
     public void Attach(FrameworkElement root)
     {
         _root = root;
@@ -33,6 +46,9 @@ public sealed class ThemeService : IThemeService
             Current = theme;
             _settings.Settings.Theme = theme;
             _settings.Save();
+
+            // 广播给所有持有主题选择器的视图模型（外壳侧边栏、设置页）。
+            ThemeChanged?.Invoke(this, theme);
         }
 
         Apply(theme);

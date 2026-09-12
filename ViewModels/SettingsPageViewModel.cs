@@ -25,6 +25,9 @@ public sealed partial class SettingsPageViewModel : ObservableObject
     /// <summary>加载期间抑制回写，避免构造时反复保存。</summary>
     private bool _isLoading = true;
 
+    /// <summary>正在根据主题服务广播同步选中项，避免回环写回。</summary>
+    private bool _isSyncingTheme;
+
     // ==================== 外观 ====================
 
     /// <summary>主题。</summary>
@@ -173,6 +176,9 @@ public sealed partial class SettingsPageViewModel : ObservableObject
         MaxConcurrentDownloads = _settings.MaxConcurrentDownloads;
         SelectedLogLevel = LogLevels.First(option => option.Value == _settings.LogLevel);
 
+        // 侧边栏切换主题时，同步本页主题下拉的选中项。
+        themeService.ThemeChanged += OnThemeServiceChanged;
+
         _isLoading = false;
     }
 
@@ -191,7 +197,7 @@ public sealed partial class SettingsPageViewModel : ObservableObject
 
     partial void OnSelectedThemeChanged(SelectOption<AppTheme> value)
     {
-        if (_isLoading)
+        if (_isLoading || _isSyncingTheme)
         {
             return;
         }
@@ -199,6 +205,26 @@ public sealed partial class SettingsPageViewModel : ObservableObject
         // ThemeService 内部会写入设置并落盘，此处不再重复保存。
         _themeService.SetTheme(value.Value);
         StatusMessage = $"主题已切换为「{value.DisplayName}」";
+    }
+
+    private void OnThemeServiceChanged(object? sender, AppTheme theme)
+    {
+        var option = Themes.FirstOrDefault(item => item.Value == theme);
+        if (option is null || ReferenceEquals(option, SelectedTheme))
+        {
+            return;
+        }
+
+        // 来自侧边栏的切换：同步下拉选中项，不写回、不刷状态栏。
+        _isSyncingTheme = true;
+        try
+        {
+            SelectedTheme = option;
+        }
+        finally
+        {
+            _isSyncingTheme = false;
+        }
     }
 
     partial void OnSelectedLanguageChanged(SelectOption<string> value)
