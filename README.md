@@ -1,5 +1,7 @@
 # Minecraft 启动器
 
+[![CI](https://github.com/msmapwr/Minecraft-Fluent-Launcher/actions/workflows/ci.yml/badge.svg)](https://github.com/msmapwr/Minecraft-Fluent-Launcher/actions/workflows/ci.yml)
+
 基于 **WinUI 3（Windows App SDK）** 开发的 Minecraft 启动器桌面应用。当前处于 **UI 优先开发阶段**，尚未接入真实启动核心。
 
 > 项目名与产品名暂为占位，待定名后统一替换。
