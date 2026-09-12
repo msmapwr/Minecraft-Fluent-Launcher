@@ -16,8 +16,11 @@ namespace WINUI.ViewModels;
 /// 模组列表来自 <see cref="ILauncherDataService"/>（Mock，当前所有实例返回同一份列表）。
 /// 启用 / 禁用与「检查更新」均为 <b>UI 演示</b>，不会改动任何 .jar 文件。
 /// </para>
+/// <para>
+/// 页面状态（加载 / 内容 / 空 / 错误）由 <see cref="PageViewModelBase"/> 提供。
+/// </para>
 /// </summary>
-public sealed partial class ModsPageViewModel : ObservableObject
+public sealed partial class ModsPageViewModel : PageViewModelBase
 {
     private readonly ILauncherDataService _dataService;
 
@@ -59,9 +62,6 @@ public sealed partial class ModsPageViewModel : ObservableObject
         new(ModFilter.Updatable, "可更新"),
     ];
 
-    /// <summary>列表是否为空。</summary>
-    public bool IsEmpty => Mods.Count == 0;
-
     /// <summary>是否已选中模组。</summary>
     public bool HasSelection => SelectedMod is not null;
 
@@ -79,6 +79,27 @@ public sealed partial class ModsPageViewModel : ObservableObject
         ? "当前实例没有模组"
         : $"共 {_allMods.Count} 个 · 已启用 {EnabledCount} · 可更新 {UpdatableCount}";
 
+    /// <summary>是否一个实例都没有。</summary>
+    private bool HasNoInstances => Instances.Count == 0;
+
+    /// <summary>当前实例是否一个模组都没有（区别于「筛选后没有匹配」）。</summary>
+    private bool HasNoMods => _allMods.Count == 0;
+
+    /// <inheritdoc />
+    public override string EmptyGlyph => HasNoInstances || HasNoMods ? "\uE7B8" : "\uE721";
+
+    /// <inheritdoc />
+    public override string EmptyTitle => HasNoInstances
+        ? "还没有可用的实例"
+        : HasNoMods ? "当前实例没有模组" : "没有匹配的模组";
+
+    /// <inheritdoc />
+    public override string EmptyText => HasNoInstances
+        ? "请先在「实例」页创建一个实例，再回来管理模组。"
+        : HasNoMods
+            ? "把 .jar 文件放进该实例的 mods 目录即可被识别（本页为演示数据）。"
+            : "没有符合当前搜索与筛选条件的模组，试试换个关键字。";
+
     public ModsPageViewModel(ILauncherDataService dataService)
     {
         _dataService = dataService;
@@ -87,25 +108,54 @@ public sealed partial class ModsPageViewModel : ObservableObject
         StatusMessage = "准备就绪";
         SelectedFilter = Filters[0];
 
-        // Mock 实现返回已完成的 Task，此处会同步跑完。
-        _ = InitializeAsync();
+        _ = LoadInstancesAsync();
     }
 
-    private async Task InitializeAsync()
+    /// <summary>
+    /// 重新载入当前内容。错误状态下的「重试」与页头刷新共用此命令：
+    /// 还没有实例列表时先补实例，否则重载当前实例的模组。
+    /// </summary>
+    [RelayCommand]
+    private async Task ReloadAsync()
     {
-        var instances = await _dataService.GetInstancesAsync();
-        foreach (var instance in instances)
+        if (Instances.Count == 0)
         {
-            Instances.Add(new SelectOption<GameInstance>(
-                instance,
-                $"{instance.Name}（{instance.GameVersion}）"));
+            await LoadInstancesAsync();
+            return;
+        }
+
+        await LoadModsAsync(SelectedInstance?.Value);
+    }
+
+    private async Task LoadInstancesAsync()
+    {
+        var loaded = await RunLoadAsync(async () =>
+        {
+            var instances = await _dataService.GetInstancesAsync();
+
+            Instances.Clear();
+            foreach (var instance in instances)
+            {
+                Instances.Add(new SelectOption<GameInstance>(
+                    instance,
+                    $"{instance.Name}（{instance.GameVersion}）"));
+            }
+        }, "无法加载实例列表");
+
+        if (!loaded)
+        {
+            StatusMessage = "实例列表加载失败";
+            return;
         }
 
         SelectedInstance = Instances.FirstOrDefault();
 
         if (SelectedInstance is null)
         {
-            ApplyQuery();
+            // 没有实例可选：直接进入空状态，等待用户在「实例」页创建。
+            State = PageState.Empty;
+            RequestRefresh();
+            StatusMessage = "还没有可用的实例，请先在「实例」页创建。";
         }
     }
 
@@ -118,7 +168,15 @@ public sealed partial class ModsPageViewModel : ObservableObject
 
         _allMods.Clear();
 
-        if (instance is not null)
+        if (instance is null)
+        {
+            State = PageState.Empty;
+            RequestRefresh();
+            StatusMessage = "请先选择一个实例";
+            return;
+        }
+
+        var loaded = await RunLoadAsync(async () =>
         {
             foreach (var entry in await _dataService.GetModsAsync(instance.Id))
             {
@@ -126,13 +184,14 @@ public sealed partial class ModsPageViewModel : ObservableObject
                 item.PropertyChanged += OnModPropertyChanged;
                 _allMods.Add(item);
             }
-        }
+        }, $"无法加载「{instance.Name}」的模组列表");
 
         // 集合重建统一走推迟刷新（该调用可能位于下拉框绑定回调的同步续体中）。
         RequestRefresh();
-        StatusMessage = instance is null
-            ? "请先选择一个实例"
-            : $"已加载「{instance.Name}」的模组列表";
+
+        StatusMessage = loaded
+            ? $"已加载「{instance.Name}」的模组列表（{_allMods.Count} 个）"
+            : "模组列表加载失败";
     }
 
     private void OnModPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -218,7 +277,11 @@ public sealed partial class ModsPageViewModel : ObservableObject
             Mods.Add(mod);
         }
 
-        OnPropertyChanged(nameof(IsEmpty));
+        UpdateContentState(Mods.Count > 0);
+
+        OnPropertyChanged(nameof(EmptyGlyph));
+        OnPropertyChanged(nameof(EmptyTitle));
+        OnPropertyChanged(nameof(EmptyText));
         OnPropertyChanged(nameof(EnabledCount));
         OnPropertyChanged(nameof(UpdatableCount));
         OnPropertyChanged(nameof(Summary));

@@ -16,8 +16,12 @@ namespace WINUI.ViewModels;
 /// 数据来自 <see cref="ILauncherDataService"/>。所有增删改均为 <b>UI 演示</b>，
 /// 不会写入磁盘，也不会影响真实实例。
 /// </para>
+/// <para>
+/// 页面状态（加载 / 内容 / 空 / 错误）由 <see cref="PageViewModelBase"/> 提供，
+/// 界面统一用 <c>Controls.StatePanel</c> 呈现。
+/// </para>
 /// </summary>
-public sealed partial class InstancesPageViewModel : ObservableObject
+public sealed partial class InstancesPageViewModel : PageViewModelBase
 {
     private readonly ILauncherDataService _dataService;
 
@@ -64,13 +68,19 @@ public sealed partial class InstancesPageViewModel : ObservableObject
         ? "暂无实例"
         : $"共 {_allInstances.Count} 个实例 · 已安装 {_allInstances.Count(instance => instance.IsInstalled)} 个";
 
-    /// <summary>列表是否为空（用于展示空状态）。</summary>
-    public bool IsEmpty => Instances.Count == 0;
+    /// <summary>是否一个实例都没有（区别于「筛选后没有匹配」）。</summary>
+    private bool HasNoInstances => _allInstances.Count == 0;
 
-    /// <summary>空状态文案。</summary>
-    public string EmptyStateText => _allInstances.Count == 0
-        ? "还没有任何实例，点击右上角「新建实例」开始。"
-        : "没有匹配的实例，试试调整搜索关键字或筛选条件。";
+    /// <inheritdoc />
+    public override string EmptyGlyph => HasNoInstances ? "\uE8F1" : "\uE721";
+
+    /// <inheritdoc />
+    public override string EmptyTitle => HasNoInstances ? "还没有实例" : "没有匹配的实例";
+
+    /// <inheritdoc />
+    public override string EmptyText => HasNoInstances
+        ? "点击右上角「新建实例」创建第一个游戏实例。"
+        : "没有符合当前搜索与筛选条件的实例，试试换个关键字。";
 
     public InstancesPageViewModel(ILauncherDataService dataService)
     {
@@ -81,14 +91,31 @@ public sealed partial class InstancesPageViewModel : ObservableObject
         SelectedFilter = Filters[0];
         SelectedSort = Sorts[0];
 
-        // Mock 实现返回已完成的 Task，此处会同步跑完。
-        _ = InitializeAsync();
+        _ = ReloadAsync();
     }
 
-    private async Task InitializeAsync()
+    /// <summary>
+    /// 从数据源重新载入实例。首次进入、错误状态下的「重试」与手动刷新共用此命令。
+    /// </summary>
+    [RelayCommand]
+    private async Task ReloadAsync()
     {
-        _allInstances.AddRange(await _dataService.GetInstancesAsync());
+        var loaded = await RunLoadAsync(async () =>
+        {
+            var instances = await _dataService.GetInstancesAsync();
+
+            _allInstances.Clear();
+            _allInstances.AddRange(instances);
+        }, "无法加载实例列表");
+
+        if (!loaded)
+        {
+            StatusMessage = "实例列表加载失败";
+            return;
+        }
+
         ApplyQuery();
+        StatusMessage = $"已载入 {_allInstances.Count} 个实例";
     }
 
     // ComboBox 的 TwoWay 绑定回调可能发生在 XAML 布局过程中，而布局期间不得修改绑定集合
@@ -144,8 +171,11 @@ public sealed partial class InstancesPageViewModel : ObservableObject
             Instances.Add(instance);
         }
 
-        OnPropertyChanged(nameof(IsEmpty));
-        OnPropertyChanged(nameof(EmptyStateText));
+        UpdateContentState(Instances.Count > 0);
+
+        OnPropertyChanged(nameof(EmptyGlyph));
+        OnPropertyChanged(nameof(EmptyTitle));
+        OnPropertyChanged(nameof(EmptyText));
         OnPropertyChanged(nameof(Summary));
 
         StatusMessage = Instances.Count == 0

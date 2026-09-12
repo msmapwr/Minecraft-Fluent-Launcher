@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:WINUI.Models"
+    xmlns:controls="using:WINUI.Controls"
     mc:Ignorable="d">
 
     <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
@@ -74,8 +75,16 @@
                 SelectedItem="{x:Bind ViewModel.SelectedSort, Mode=TwoWay}" />
         </Grid>
 
-        <!-- 实例网格 -->
-        <Grid Grid.Row="2">
+        <!-- 实例网格：四态（加载 / 内容 / 空 / 错误）统一由 StatePanel 承担 -->
+        <controls:StatePanel
+            Grid.Row="2"
+            EmptyGlyph="{x:Bind ViewModel.EmptyGlyph, Mode=OneWay}"
+            EmptyText="{x:Bind ViewModel.EmptyText, Mode=OneWay}"
+            EmptyTitle="{x:Bind ViewModel.EmptyTitle, Mode=OneWay}"
+            ErrorText="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+            RetryCommand="{x:Bind ViewModel.ReloadCommand}"
+            State="{x:Bind ViewModel.State, Mode=OneWay}"
+            Style="{StaticResource AppStatePanelStyle}">
             <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.Instances}">
                     <ItemsRepeater.Layout>
@@ -197,25 +206,7 @@
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
             </ScrollViewer>
-
-            <!-- 空状态 -->
-            <StackPanel
-                MaxWidth="360"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Spacing="{StaticResource SpaceSm}"
-                Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Style="{StaticResource AppSectionTitleStyle}"
-                    Text="没有可显示的实例" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    TextAlignment="Center"
-                    Style="{StaticResource AppCaptionTextStyle}"
-                    Text="{x:Bind ViewModel.EmptyStateText, Mode=OneWay}" />
-            </StackPanel>
-        </Grid>
+        </controls:StatePanel>
 
         <!-- 状态栏 -->
         <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">

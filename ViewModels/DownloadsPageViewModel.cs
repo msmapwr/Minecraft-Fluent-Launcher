@@ -18,9 +18,10 @@ namespace WINUI.ViewModels;
 /// </para>
 /// <para>
 /// 列表带分页：可切换每页条数（10 / 20 / 50）并通过数字页码、上一页 / 下一页翻页。
+/// 页面状态（加载 / 内容 / 空 / 错误）由 <see cref="PageViewModelBase"/> 提供。
 /// </para>
 /// </summary>
-public sealed partial class DownloadsPageViewModel : ObservableObject
+public sealed partial class DownloadsPageViewModel : PageViewModelBase
 {
     private readonly ILauncherDataService _dataService;
     private readonly INavigationService _navigation;
@@ -108,11 +109,25 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
         new(50, "每页 50 条"),
     ];
 
-    /// <summary>筛选结果是否为空。</summary>
-    public bool IsEmpty => _filteredItems.Count == 0;
-
     /// <summary>是否有条目（用于分页条的显示控制）。</summary>
     public bool HasItems => _filteredItems.Count > 0;
+
+    /// <summary>分页条是否可见：仅在处于内容态且有条目时显示。</summary>
+    public bool ShowPager => IsContent && HasItems;
+
+    /// <summary>数据源本身是否为空（区别于「筛选后没有匹配」）。</summary>
+    private bool HasNoItems => _allItems.Count == 0;
+
+    /// <inheritdoc />
+    public override string EmptyGlyph => HasNoItems ? "\uE7B8" : "\uE721";
+
+    /// <inheritdoc />
+    public override string EmptyTitle => HasNoItems ? "还没有可下载的内容" : "没有匹配的条目";
+
+    /// <inheritdoc />
+    public override string EmptyText => HasNoItems
+        ? "数据源暂时没有返回任何条目，稍后重试或更换下载源。"
+        : $"没有符合「{SelectedCategory?.DisplayName ?? "全部"}」与当前关键字的条目，试试放宽筛选条件。";
 
     /// <summary>队列是否为空。</summary>
     public bool IsQueueEmpty => Queue.Count == 0;
@@ -149,14 +164,31 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
 
         Queue.CollectionChanged += OnQueueChanged;
 
-        // Mock 实现返回已完成的 Task，此处会同步跑完。
-        _ = InitializeAsync();
+        _ = ReloadAsync();
     }
 
-    private async Task InitializeAsync()
+    /// <summary>
+    /// 从数据源重新载入条目。首次进入、错误状态下的「重试」与手动刷新共用此命令。
+    /// </summary>
+    [RelayCommand]
+    private async Task ReloadAsync()
     {
-        _allItems.AddRange(await _dataService.GetDownloadItemsAsync());
+        var loaded = await RunLoadAsync(async () =>
+        {
+            var items = await _dataService.GetDownloadItemsAsync();
+
+            _allItems.Clear();
+            _allItems.AddRange(items);
+        }, "无法加载下载条目");
+
+        if (!loaded)
+        {
+            StatusMessage = "下载条目加载失败";
+            return;
+        }
+
         ApplyQuery();
+        StatusMessage = $"已载入 {_allItems.Count} 条内容 · 下载源：{SelectedSource.Value.ToLabel()}";
     }
 
     private void OnQueueChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -195,6 +227,9 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
 
     partial void OnIsDownloadingChanged(bool value) => StartQueueCommand.NotifyCanExecuteChanged();
 
+    /// <inheritdoc />
+    protected override void OnStateChangedCore() => OnPropertyChanged(nameof(ShowPager));
+
     /// <summary>按当前搜索 / 分类条件刷新列表，并回到第一页。</summary>
     private void ApplyQuery()
     {
@@ -229,8 +264,13 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
         _suppressPageRefresh = false;
         RequestPageRefresh();
 
-        OnPropertyChanged(nameof(IsEmpty));
+        UpdateContentState(_filteredItems.Count > 0);
+
         OnPropertyChanged(nameof(HasItems));
+        OnPropertyChanged(nameof(ShowPager));
+        OnPropertyChanged(nameof(EmptyGlyph));
+        OnPropertyChanged(nameof(EmptyTitle));
+        OnPropertyChanged(nameof(EmptyText));
 
         StatusMessage = _filteredItems.Count == 0
             ? $"没有匹配「{SelectedCategory.DisplayName}」的条目 · 下载源：{SelectedSource.Value.ToLabel()}"
@@ -295,10 +335,6 @@ public sealed partial class DownloadsPageViewModel : ObservableObject
     /// <summary>最后一页。</summary>
     [RelayCommand]
     private void LastPage() => GoToPage(TotalPages);
-
-    /// <summary>刷新列表（演示）。</summary>
-    [RelayCommand]
-    private void Refresh() => StatusMessage = $"已刷新列表（演示）· 下载源：{SelectedSource.Value.ToLabel()}";
 
     /// <summary>进入版本详情页（仅「版本」条目可用）。</summary>
     /// <param name="item">条目。</param>

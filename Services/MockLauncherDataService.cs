@@ -15,6 +15,68 @@ namespace WINUI.Services;
 /// </summary>
 public sealed class MockLauncherDataService : ILauncherDataService
 {
+    // ==================== 演示用行为开关 ====================
+    //
+    // 本类依旧是「纯 Mock、无网络」，但为了能真实观察到界面的「加载中 / 错误」状态，
+    // 提供了两个仅通过环境变量生效的演示开关（不影响正常使用）：
+    //
+    //   MFL_MOCK_DELAY=600   每个查询的模拟耗时（毫秒）。缺省 200；设为 0 关闭延迟。
+    //   MFL_MOCK_FAIL=downloads;mods
+    //                        让指定查询抛错，用于验证错误状态与「重试」。
+    //                        可用键：versions / instances / downloads / loaders
+    //                                / mods / news / account / offline / logs
+    //
+    // 例（PowerShell）：
+    //   $env:MFL_MOCK_FAIL = "downloads"; .\MinecraftFluentLauncher.exe
+
+    /// <summary>单次查询的模拟耗时。</summary>
+    private static readonly TimeSpan SimulatedDelay = ResolveDelay();
+
+    /// <summary>需要模拟失败的查询键。</summary>
+    private static readonly HashSet<string> FailureKeys = ResolveFailureKeys();
+
+    private static TimeSpan ResolveDelay()
+    {
+        var raw = Environment.GetEnvironmentVariable("MFL_MOCK_DELAY");
+
+        return int.TryParse(raw, out var milliseconds) && milliseconds >= 0
+            ? TimeSpan.FromMilliseconds(milliseconds)
+            : TimeSpan.FromMilliseconds(200);
+    }
+
+    private static HashSet<string> ResolveFailureKeys()
+    {
+        var raw = Environment.GetEnvironmentVariable("MFL_MOCK_FAIL");
+
+        return raw is null
+            ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            : new HashSet<string>(
+                raw.Split([';', ',', ' ', '|'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// 统一的「查询」出口：先模拟耗时，再按需模拟失败，最后返回数据。
+    /// <para>
+    /// <b>不要</b>改用 <c>ConfigureAwait(false)</c>：视图模型在 <c>await</c> 之后会直接修改
+    /// 绑定到界面的集合，续体必须回到 UI 线程。
+    /// </para>
+    /// </summary>
+    private static async Task<T> RespondAsync<T>(string key, T payload)
+    {
+        if (SimulatedDelay > TimeSpan.Zero)
+        {
+            await Task.Delay(SimulatedDelay);
+        }
+
+        if (FailureKeys.Contains(key))
+        {
+            throw new InvalidOperationException($"已通过 MFL_MOCK_FAIL 模拟数据源故障（{key}）");
+        }
+
+        return payload;
+    }
+
     private static readonly IReadOnlyList<GameVersion> Versions =
     [
         new()
@@ -875,19 +937,19 @@ public sealed class MockLauncherDataService : ILauncherDataService
 
     /// <inheritdoc />
     public Task<IReadOnlyList<LogEntry>> GetLogEntriesAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(LogEntries);
+        => RespondAsync("logs", LogEntries);
 
     /// <inheritdoc />
     public Task<IReadOnlyList<OfflineAccount>> GetOfflineAccountsAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(OfflineAccounts);
+        => RespondAsync("offline", OfflineAccounts);
 
     /// <inheritdoc />
     public Task<IReadOnlyList<ModEntry>> GetModsAsync(string instanceId, CancellationToken cancellationToken = default)
-        => Task.FromResult(Mods);
+        => RespondAsync("mods", Mods);
 
     /// <inheritdoc />
     public Task<IReadOnlyList<DownloadItem>> GetDownloadItemsAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(DownloadItems);
+        => RespondAsync("downloads", DownloadItems);
 
     /// <inheritdoc />
     /// <remarks>
@@ -898,7 +960,7 @@ public sealed class MockLauncherDataService : ILauncherDataService
     {
         if (!TryParseVersion(gameVersion, out var major, out var minor))
         {
-            return Task.FromResult<IReadOnlyList<LoaderEntry>>([]);
+            return RespondAsync<IReadOnlyList<LoaderEntry>>("loaders", []);
         }
 
         var result = new List<LoaderEntry> { FabricEntry };
@@ -915,7 +977,7 @@ public sealed class MockLauncherDataService : ILauncherDataService
 
         result.Add(QuiltEntry);
 
-        return Task.FromResult<IReadOnlyList<LoaderEntry>>(result);
+        return RespondAsync<IReadOnlyList<LoaderEntry>>("loaders", result);
     }
 
     /// <summary>从「主版本.次版本」形式的版本号中解析出两个数字；快照 / 远古版本解析失败。</summary>
@@ -932,17 +994,17 @@ public sealed class MockLauncherDataService : ILauncherDataService
 
     /// <inheritdoc />
     public Task<IReadOnlyList<GameVersion>> GetVersionsAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(Versions);
+        => RespondAsync("versions", Versions);
 
     /// <inheritdoc />
     public Task<IReadOnlyList<GameInstance>> GetInstancesAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(Instances);
+        => RespondAsync("instances", Instances);
 
     /// <inheritdoc />
     public Task<IReadOnlyList<NewsItem>> GetNewsAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(News);
+        => RespondAsync("news", News);
 
     /// <inheritdoc />
     public Task<PlayerAccount> GetCurrentAccountAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(Account);
+        => RespondAsync("account", Account);
 }

@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:WINUI.ViewModels"
+    xmlns:controls="using:WINUI.Controls"
     mc:Ignorable="d">
 
     <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
@@ -82,7 +83,16 @@
                 <ColumnDefinition Width="340" />
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="0">
+            <!-- 模组列表：四态（加载 / 内容 / 空 / 错误）统一由 StatePanel 承担 -->
+            <controls:StatePanel
+                Grid.Column="0"
+                EmptyGlyph="{x:Bind ViewModel.EmptyGlyph, Mode=OneWay}"
+                EmptyText="{x:Bind ViewModel.EmptyText, Mode=OneWay}"
+                EmptyTitle="{x:Bind ViewModel.EmptyTitle, Mode=OneWay}"
+                ErrorText="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                RetryCommand="{x:Bind ViewModel.ReloadCommand}"
+                State="{x:Bind ViewModel.State, Mode=OneWay}"
+                Style="{StaticResource AppStatePanelStyle}">
                 <ListView
                     ItemsSource="{x:Bind ViewModel.Mods}"
                     SelectedItem="{x:Bind ViewModel.SelectedMod, Mode=TwoWay}"
@@ -140,25 +150,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-
-                <!-- 空状态 -->
-                <StackPanel
-                    MaxWidth="360"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Spacing="{StaticResource SpaceSm}"
-                    Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        Style="{StaticResource AppSectionTitleStyle}"
-                        Text="没有匹配的模组" />
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        TextAlignment="Center"
-                        Style="{StaticResource AppCaptionTextStyle}"
-                        Text="试试更换实例、筛选条件或调整搜索关键字。" />
-                </StackPanel>
-            </Grid>
+            </controls:StatePanel>
 
             <!-- 详情面板 -->
             <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">

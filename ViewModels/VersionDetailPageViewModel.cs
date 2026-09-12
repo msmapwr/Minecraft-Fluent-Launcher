@@ -1,4 +1,3 @@
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -16,8 +15,12 @@ namespace WINUI.ViewModels;
 /// 展示某个游戏版本的信息，并允许<b>多选模组加载器</b>后一并安装。
 /// 安装为纯 UI 演示：只走进度与文案，<b>不下载任何文件，也不创建真实实例</b>。
 /// </para>
+/// <para>
+/// 页面状态（加载 / 内容 / 错误）由 <see cref="PageViewModelBase"/> 提供。
+/// 本页没有「空」状态：加载器为空是有效结果，由加载器区域自行说明。
+/// </para>
 /// </summary>
-public sealed partial class VersionDetailPageViewModel : ObservableObject
+public sealed partial class VersionDetailPageViewModel : PageViewModelBase
 {
     private readonly ILauncherDataService _dataService;
     private readonly INavigationService _navigation;
@@ -91,6 +94,15 @@ public sealed partial class VersionDetailPageViewModel : ObservableObject
         ? "该版本无可用加载器"
         : $"已选 {SelectedLoaderCount} / {Loaders.Count} 个加载器";
 
+    /// <summary>
+    /// 错误状态下的恢复动作：有版本信息就重试加载器清单，
+    /// 拿不到版本信息（导航参数缺失）则返回下载中心重新选择。
+    /// </summary>
+    public IRelayCommand RetryCommand => Version is null ? GoBackCommand : ReloadCommand;
+
+    /// <summary>「重试」按钮的文案，与 <see cref="RetryCommand"/> 的动作保持一致。</summary>
+    public string RetryText => Version is null ? "返回下载中心" : "重试";
+
     public VersionDetailPageViewModel(ILauncherDataService dataService, INavigationService navigation)
     {
         _dataService = dataService;
@@ -115,9 +127,28 @@ public sealed partial class VersionDetailPageViewModel : ObservableObject
             loader.PropertyChanged -= OnLoaderPropertyChanged;
         }
 
-        var entries = item is null
-            ? Array.Empty<LoaderEntry>()
-            : (await _dataService.GetLoadersAsync(item.Version)).ToArray();
+        if (item is null)
+        {
+            // 没有拿到导航参数：视为错误，引导用户返回下载中心重新选择。
+            ErrorMessage = "未获取到版本信息。请返回下载中心，重新选择要查看的版本。";
+            State = PageState.Error;
+            StatusMessage = "未获取到版本信息";
+            RefreshSummary();
+            return;
+        }
+
+        LoaderEntry[] entries = [];
+
+        var loaded = await RunLoadAsync(
+            async () => entries = (await _dataService.GetLoadersAsync(item.Version)).ToArray(),
+            $"无法读取 Minecraft {item.Version} 的加载器清单");
+
+        if (!loaded)
+        {
+            StatusMessage = "加载器清单加载失败";
+            RefreshSummary();
+            return;
+        }
 
         _loadersUpdater.Request(() =>
         {
@@ -134,18 +165,22 @@ public sealed partial class VersionDetailPageViewModel : ObservableObject
             NotifyLoaderState();
         });
 
-        StatusMessage = item is null
-            ? "未获取到版本信息，请返回下载中心重试"
-            : entries.Length == 0
-                ? "该版本不支持第三方模组加载器，将按原版安装"
-                : $"已读取 {entries.Length} 个可用加载器，可多选后一并安装";
+        StatusMessage = entries.Length == 0
+            ? "该版本不支持第三方模组加载器，将按原版安装"
+            : $"已读取 {entries.Length} 个可用加载器，可多选后一并安装";
     }
+
+    /// <summary>重新载入当前版本（错误状态下的「重试」）。</summary>
+    [RelayCommand]
+    private Task ReloadAsync() => LoadAsync(Version);
 
     partial void OnVersionChanged(DownloadItem? value)
     {
         OnPropertyChanged(nameof(HasVersion));
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(Subtitle));
+        OnPropertyChanged(nameof(RetryCommand));
+        OnPropertyChanged(nameof(RetryText));
         InstallCommand.NotifyCanExecuteChanged();
     }
 
@@ -227,7 +262,7 @@ public sealed partial class VersionDetailPageViewModel : ObservableObject
                 for (var step = 0; step < 4; step++)
                 {
                     await Task.Delay(80);
-                    InstallProgress = Math.Min(100, InstallProgress + 100.0 / stepCount);
+                    InstallProgress = System.Math.Min(100, InstallProgress + 100.0 / stepCount);
                 }
             }
 

@@ -14,8 +14,10 @@ namespace WINUI.Controls;
 /// &lt;controls:StatePanel
 ///     Style="{StaticResource AppStatePanelStyle}"
 ///     State="{x:Bind ViewModel.State, Mode=OneWay}"
-///     EmptyText="{x:Bind ViewModel.EmptyStateText, Mode=OneWay}"
-///     RetryCommand="{x:Bind ViewModel.RefreshCommand}"&gt;
+///     EmptyTitle="{x:Bind ViewModel.EmptyTitle, Mode=OneWay}"
+///     EmptyText="{x:Bind ViewModel.EmptyText, Mode=OneWay}"
+///     ErrorText="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+///     RetryCommand="{x:Bind ViewModel.ReloadCommand}"&gt;
 ///     &lt;!-- 这里放原本的列表 / 网格 --&gt;
 /// &lt;/controls:StatePanel&gt;
 /// </code>

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ⑤-2｜列表页接入加载 / 空 / 错误三态**：下载中心、实例、模组、版本详情四个页面统一改用状态容器，不再各写一套空状态。
+  - 新增视图模型基类 `ViewModels/PageViewModelBase`：持有 `State`（`Content` / `Loading` / `Empty` / `Error`）与 `ErrorMessage`，提供 `RunLoadAsync`（加载期间进入加载态，异常时进入错误态并记录原因，**不向外抛出**）与 `UpdateContentState`（按是否有可见项收敛为空态或内容态；加载中与错误态不被覆盖，避免空状态闪烁、错误提示被筛选操作顶掉）。
+  - 四个视图模型改为继承该基类，并各自覆写空状态文案：区分「尚无数据」与「没有匹配结果」两种情形，图标也随之切换（无数据用 Package，无匹配用放大镜）。
+  - 各页的加载动作重构为可重复执行的命令（下载 / 实例 `ReloadCommand`、模组 / 版本详情 `ReloadCommand`），既是首次加载入口，也是错误状态下「重试」按钮与页头「刷新」的实现；下载中心的「刷新」由纯文案演示改为真实重新取数。
+  - 版本详情页在拿不到导航参数（版本信息缺失）时进入错误态，此时「重试」按钮自动变为「返回下载中心」，避免反复重试同一个无效请求。
+  - `MockLauncherDataService` 增加**模拟耗时**，使加载态可见；并提供仅通过环境变量生效的演示开关：`MFL_MOCK_DELAY`（每次查询的模拟耗时，默认 200 毫秒，设为 0 可关闭）、`MFL_MOCK_FAIL`（让指定查询抛错，用于验证错误态与「重试」，可用键 `versions` / `instances` / `downloads` / `loaders` / `mods` / `news` / `account` / `offline` / `logs`）。两个开关不影响正常使用，数据仍为纯 Mock、无网络请求。
 - **大更新 ⑤-1｜状态与通知基础设施**：为后续所有页面统一「加载 / 空 / 错误」三态与「对话框 / 通知」反馈，不再由各页面各自拼装。
   - 新增模板化控件 `Controls/StatePanel`（样式 `Themes/StatePanel.xaml`）：在正常内容之上叠放加载层、空状态层、错误层，通过 `VisualStateManager` 切换可见性；暴露 `State` / `LoadingText` / `EmptyGlyph` / `EmptyTitle` / `EmptyText` / `ErrorGlyph` / `ErrorTitle` / `ErrorText` / `RetryText` / `RetryCommand` 等属性。错误层仅在提供 `RetryCommand` 时显示「重试」按钮。
   - 新增 `Models/PageState`（`Content` / `Loading` / `Empty` / `Error`）。

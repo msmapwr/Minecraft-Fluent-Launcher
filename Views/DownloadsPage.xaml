@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:WINUI.Models"
     xmlns:viewmodels="using:WINUI.ViewModels"
+    xmlns:controls="using:WINUI.Controls"
     mc:Ignorable="d">
 
     <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
@@ -58,7 +59,7 @@
             <Button
                 Grid.Column="3"
                 VerticalAlignment="Bottom"
-                Command="{x:Bind ViewModel.RefreshCommand}">
+                Command="{x:Bind ViewModel.ReloadCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
                     <FontIcon
                         FontFamily="{StaticResource AppIconFontFamily}"
@@ -76,7 +77,16 @@
                 <ColumnDefinition Width="340" />
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="0">
+            <!-- 条目列表：四态（加载 / 内容 / 空 / 错误）统一由 StatePanel 承担 -->
+            <controls:StatePanel
+                Grid.Column="0"
+                EmptyGlyph="{x:Bind ViewModel.EmptyGlyph, Mode=OneWay}"
+                EmptyText="{x:Bind ViewModel.EmptyText, Mode=OneWay}"
+                EmptyTitle="{x:Bind ViewModel.EmptyTitle, Mode=OneWay}"
+                ErrorText="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                RetryCommand="{x:Bind ViewModel.ReloadCommand}"
+                State="{x:Bind ViewModel.State, Mode=OneWay}"
+                Style="{StaticResource AppStatePanelStyle}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
                     <ItemsRepeater ItemsSource="{x:Bind ViewModel.Items}">
                         <ItemsRepeater.Layout>
@@ -169,25 +179,7 @@
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
                 </ScrollViewer>
-
-                <!-- 空状态 -->
-                <StackPanel
-                    MaxWidth="360"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Spacing="{StaticResource SpaceSm}"
-                    Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        Style="{StaticResource AppSectionTitleStyle}"
-                        Text="没有匹配的条目" />
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        TextAlignment="Center"
-                        Style="{StaticResource AppCaptionTextStyle}"
-                        Text="试试更换分类或调整搜索关键字。" />
-                </StackPanel>
-            </Grid>
+            </controls:StatePanel>
 
             <!-- 下载队列 -->
             <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
@@ -286,7 +278,7 @@
                 VerticalAlignment="Bottom"
                 Orientation="Horizontal"
                 Spacing="{StaticResource SpaceXs}"
-                Visibility="{x:Bind ViewModel.HasItems, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.ShowPager, Mode=OneWay}">
                 <Button
                     Padding="10,5"
                     Command="{x:Bind ViewModel.FirstPageCommand}"
