@@ -14,7 +14,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 {
     private readonly IThemeService _themeService;
 
-    /// <summary>应用标题。占位名，待产品定名后统一替换。</summary>
+    /// <summary>应用标题。</summary>
     [ObservableProperty]
     public partial string AppTitle { get; set; }
 
@@ -34,7 +34,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         _themeService = themeService;
 
-        AppTitle = "Minecraft 启动器";
+        AppTitle = "Minecraft Fluent Launcher";
 
         // 与已保存的主题偏好保持一致。
         SelectedThemeOption = ThemeOptions.First(option => option.Value == themeService.Current);

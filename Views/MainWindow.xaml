@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="Minecraft 启动器">
+    Title="Minecraft Fluent Launcher">
 
     <Window.SystemBackdrop>
         <MicaBackdrop />
@@ -28,11 +28,11 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="{StaticResource SpaceSm}">
-                <FontIcon
-                    FontFamily="{StaticResource AppIconFontFamily}"
-                    FontSize="{StaticResource FontSizeIcon}"
-                    Foreground="{ThemeResource AppAccentBrush}"
-                    Glyph="{StaticResource IconLibraryGlyph}" />
+                <Image
+                    Width="20"
+                    Height="20"
+                    VerticalAlignment="Center"
+                    Source="ms-appx:///Assets/AppIcon.png" />
                 <TextBlock
                     VerticalAlignment="Center"
                     Style="{StaticResource AppSectionTitleStyle}"

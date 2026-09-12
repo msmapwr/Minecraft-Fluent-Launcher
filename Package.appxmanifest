@@ -16,7 +16,7 @@
   <mp:PhoneIdentity PhoneProductId="1d70f0f4-9326-4a1f-8a95-5c057505e63d" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>WINUI</DisplayName>
+    <DisplayName>Minecraft Fluent Launcher</DisplayName>
     <PublisherDisplayName>Msmapwr</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -35,8 +35,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="WINUI"
-        Description="WINUI"
+        DisplayName="Minecraft Fluent Launcher"
+        Description="Minecraft Fluent Launcher — 基于 WinUI 3 的 Minecraft 启动器"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">

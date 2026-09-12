@@ -11,8 +11,8 @@ namespace WINUI.Services;
 /// </summary>
 public sealed class JsonSettingsService : ISettingsService
 {
-    /// <summary>应用数据目录名。占位值，待产品定名后统一替换。</summary>
-    private const string AppDataFolderName = "MinecraftLauncher";
+    /// <summary>应用数据目录名（对应产品名 Minecraft Fluent Launcher）。</summary>
+    private const string AppDataFolderName = "MinecraftFluentLauncher";
 
     private const string FileName = "settings.json";
 

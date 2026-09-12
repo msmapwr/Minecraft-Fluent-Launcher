@@ -1,13 +1,13 @@
 # 开发计划（Project Plan）
 
-> 本文件记录 Minecraft 启动器的开发计划，遵循 [AGENTS.md](../AGENTS.md) 的流程要求。
+> 本文件记录 **Minecraft Fluent Launcher（MFL）** 的开发计划，遵循 [AGENTS.md](../AGENTS.md) 的流程要求。
 > 最后更新：2026-09-12
 
 ---
 
 ## 1. 项目目标
 
-开发一款 **Minecraft 启动器** 桌面应用，基于 WinUI 3（Windows App SDK）。
+开发一款 **Minecraft 启动器** 桌面应用，产品名 **Minecraft Fluent Launcher（MFL）**，基于 WinUI 3（Windows App SDK）。
 
 **当前阶段：UI 优先。** 本阶段只交付界面与交互骨架，使用 **Mock 数据**，不接入真实的游戏下载、账户认证与 JVM 启动逻辑。
 
@@ -127,8 +127,8 @@
 | # | 问题 | 影响 |
 |---|---|---|
 | 1 | **GitHub Repository 地址** | 未提供前只能本地 Commit，**无法 Push**（AGENTS.md §3.1） |
-| 2 | 产品 / 项目正式名称 | 影响窗口标题、命名空间、安装包标识 |
-| 3 | 设计稿 / Logo / 品牌色 | 影响大更新 ② 视觉落地 |
+| 2 | ~~产品 / 项目正式名称~~ | ✅ 已定名 **Minecraft Fluent Launcher（MFL）** |
+| 3 | 品牌色 / 完整 VI（Logo 已提供） | 影响大更新 ② 视觉落地 |
 | 4 | 参考产品（PCL2 / HMCL / 官方 / CurseForge / Modrinth） | 影响信息架构与布局 |
 | 5 | 性能与验收硬指标（启动耗时等） | 影响大更新 ⑥ 验收 |
 | 6 | 是否接入端侧 AI（manifest 已声明 `systemAIModels`） | 影响功能范围 |
@@ -149,5 +149,5 @@
 |---|---|---|
 | 运行时渲染未验证 | 全部 XAML 目前只验证到「编译通过 + 生成 `.xbf`」，未在本机运行确认 | 需用户运行确认 |
 | 主题切换与 Mica | WinUI 3 的 `Application.RequestedTheme` 启动后不可变；当前通过设置根元素 `RequestedTheme` 切换，Mica 背景与系统窗口按钮**可能不跟随**变化 | 运行时确认后再定方案（重建窗口 / 重启提示） |
-| 应用图标 | 仍为模板默认 Logo | 待产品定名后替换 |
-| 应用数据目录名 | `settings.json` 所在目录硬编码为 `MinecraftLauncher` | 待产品定名后统一替换 |
+| 应用图标 | ~~仍为模板默认 Logo~~ ✅ 已替换为 `Assets/App.jpg` 派生的透明图标与 `App.ico` | 已完成 |
+| 应用数据目录名 | ~~硬编码为 `MinecraftLauncher`~~ ✅ 已改为 `MinecraftFluentLauncher`（旧目录中的设置不会被读取） | 已完成 |

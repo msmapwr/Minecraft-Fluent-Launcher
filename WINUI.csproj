@@ -4,6 +4,12 @@
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>WINUI</RootNamespace>
+    <!--
+      RootNamespace 保持 WINUI 不变（改名会波及全部 x:Class / namespace，收益为 0）；
+      仅把产物程序集名与 exe 图标品牌化为 Minecraft Fluent Launcher。
+    -->
+    <AssemblyName>MinecraftFluentLauncher</AssemblyName>
+    <ApplicationIcon>Assets\App.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
@@ -22,6 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Assets\AppIcon.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />

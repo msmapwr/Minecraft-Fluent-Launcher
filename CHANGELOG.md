@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **产品定名与品牌化**：产品正式命名为 **Minecraft Fluent Launcher（MFL）**。
+  - 应用图标取自 `Assets/App.jpg`（像素风金苹果），程序化去白底后生成全套带透明通道的多尺寸资源：`Square44x44Logo`、`Square150x150Logo`、`StoreLogo`、`LockScreenLogo`、`Wide310x150Logo`、`SplashScreen`，以及多尺寸 `App.ico`，另新增应用内使用、无缩放限定符的 `Assets/AppIcon.png`。
+  - `WINUI.csproj` 新增 `<AssemblyName>MinecraftFluentLauncher</AssemblyName>` 与 `<ApplicationIcon>Assets\App.ico</ApplicationIcon>`（`RootNamespace` 保持 `WINUI` 不变，避免无收益的全量改名）。
+  - `Package.appxmanifest` 的 `DisplayName` / `Description`、`app.manifest` 的 `assemblyIdentity`、`Views/MainWindow.xaml` 的窗口 `Title` 均切换为正式产品名。
+  - 自定义标题栏的应用图标由字形图标改为真实应用图标（`Assets/AppIcon.png`）。
+  - 应用数据目录由 `%LOCALAPPDATA%\MinecraftLauncher` 改为 `%LOCALAPPDATA%\MinecraftFluentLauncher`。
 - 搭建 MVVM 与依赖注入基础：引入 `CommunityToolkit.Mvvm` 8.4.2 与 `Microsoft.Extensions.DependencyInjection` 10.0.12，`App` 负责构建 DI 容器并从容器解析主窗口。
 - 新增 `Views/`、`ViewModels/` 目录结构；主窗口迁移至 `Views/MainWindow`，改为构造函数注入视图模型。
 - 新增 `ViewModels/MainWindowViewModel`，打通「DI 注入 → View 绑定」链路。

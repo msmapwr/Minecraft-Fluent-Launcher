@@ -15,6 +15,8 @@
 | 阶段 | 第 1 阶段：UI（超大更新进行中） |
 | 发布版本 | 尚未发布（见 [CHANGELOG](./CHANGELOG.md)） |
 | 构建状态 | ✅ 通过（0 警告 0 错误） |
+| 产品名 | Minecraft Fluent Launcher（MFL） |
+| 应用图标 | `Assets/App.jpg` → 透明多尺寸 PNG + `.ico` |
 
 ---
 
@@ -66,12 +68,12 @@ dotnet run --project WINUI.csproj -p:Platform=x64
 ```text
 WINUI/
 ├─ App.xaml / App.xaml.cs   # 应用入口：构建 DI 容器、启动主窗口
-├─ Views/                   # 视图（XAML 页面/窗口）
+├─ Views/                   # 视图（主窗口外壳 + 8 个页面）
 ├─ ViewModels/              # 视图模型
-├─ Models/                  # 数据模型（后续阶段）
-├─ Services/                # 服务层（后续阶段）
+├─ Models/                  # 数据模型（枚举 / 设置 / 页面数据）
+├─ Services/                # 服务层（设置 / 主题 / 导航）
 ├─ Controls/                # 自定义控件（后续阶段）
-├─ Themes/                  # 主题与设计令牌（后续阶段）
+├─ Themes/                  # 设计令牌、控件样式、图标字形
 ├─ Assets/                  # 图标、启动画面等资源
 └─ docs/                    # 项目文档
 ```
