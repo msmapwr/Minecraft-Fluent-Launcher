@@ -20,16 +20,19 @@ public sealed class JsonSettingsService : ISettingsService
 
     public JsonSettingsService()
     {
-        var directory = Path.Combine(
+        DataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             AppDataFolderName);
 
-        _filePath = Path.Combine(directory, FileName);
+        _filePath = Path.Combine(DataDirectory, FileName);
         Settings = Load();
     }
 
     /// <inheritdoc />
     public AppSettings Settings { get; }
+
+    /// <inheritdoc />
+    public string DataDirectory { get; }
 
     /// <inheritdoc />
     public void Save()

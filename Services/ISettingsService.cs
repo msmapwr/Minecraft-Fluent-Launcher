@@ -10,6 +10,9 @@ public interface ISettingsService
     /// </summary>
     AppSettings Settings { get; }
 
+    /// <summary>设置文件所在的目录（用于在界面上展示、打开）。</summary>
+    string DataDirectory { get; }
+
     /// <summary>把当前设置写入本地文件。</summary>
     void Save();
 }

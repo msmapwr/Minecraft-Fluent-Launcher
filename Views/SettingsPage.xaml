@@ -7,11 +7,392 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Padding="{StaticResource PagePadding}">
-        <StackPanel Spacing="{StaticResource SpaceSm}">
+    <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 页头 -->
+        <StackPanel Grid.Row="0" Spacing="{StaticResource SpaceXs}">
             <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="设置" />
-            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="外观、启动参数与下载设置。" />
-            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="占位页 · 将在「核心页面」阶段实现" />
+            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="外观、启动器行为、Java 运行时与下载偏好。改动会立即保存到本地设置文件。" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
+            <StackPanel MaxWidth="860" HorizontalAlignment="Left" Spacing="{StaticResource SpaceLg}">
+
+                <!-- 外观 -->
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="{StaticResource SpaceMd}">
+                        <TextBlock Style="{StaticResource AppSectionTitleStyle}" Text="外观" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="主题" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="跟随系统，或固定为浅色 / 深色。" />
+                            </StackPanel>
+                            <ComboBox
+                                Grid.Column="1"
+                                MinWidth="180"
+                                VerticalAlignment="Center"
+                                DisplayMemberPath="DisplayName"
+                                ItemsSource="{x:Bind ViewModel.Themes}"
+                                SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}" />
+                        </Grid>
+
+                        <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="界面语言" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="界面文案的本地化尚在计划中，当前仅记录偏好。" />
+                            </StackPanel>
+                            <ComboBox
+                                Grid.Column="1"
+                                MinWidth="180"
+                                VerticalAlignment="Center"
+                                DisplayMemberPath="DisplayName"
+                                ItemsSource="{x:Bind ViewModel.Languages}"
+                                SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}" />
+                        </Grid>
+
+                        <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="界面动画" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="关闭后可减少过渡与滚动动画。" />
+                            </StackPanel>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsOn="{x:Bind ViewModel.EnableAnimations, Mode=TwoWay}"
+                                OffContent=""
+                                OnContent="" />
+                        </Grid>
+
+                        <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="显示快照版本" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="在版本列表中同时显示快照与预览版本。" />
+                            </StackPanel>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsOn="{x:Bind ViewModel.ShowSnapshots, Mode=TwoWay}"
+                                OffContent=""
+                                OnContent="" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 启动器行为 -->
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="{StaticResource SpaceMd}">
+                        <TextBlock Style="{StaticResource AppSectionTitleStyle}" Text="启动器行为" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="启动时检查更新" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="启动器启动时查询是否有新版本。" />
+                            </StackPanel>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsOn="{x:Bind ViewModel.AutoCheckUpdates, Mode=TwoWay}"
+                                OffContent=""
+                                OnContent="" />
+                        </Grid>
+
+                        <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="启动游戏后关闭启动器" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="游戏成功启动后自动退出启动器以释放内存。" />
+                            </StackPanel>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsOn="{x:Bind ViewModel.CloseLauncherAfterLaunch, Mode=TwoWay}"
+                                OffContent=""
+                                OnContent="" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Java 运行时 -->
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="{StaticResource SpaceMd}">
+                        <TextBlock Style="{StaticResource AppSectionTitleStyle}" Text="Java 运行时" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="自动检测 Java" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="按版本需求自动选择已安装的 Java 运行时。" />
+                            </StackPanel>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsOn="{x:Bind ViewModel.AutoDetectJava, Mode=TwoWay}"
+                                OffContent=""
+                                OnContent="" />
+                        </Grid>
+
+                        <StackPanel Spacing="{StaticResource SpaceXs}">
+                            <TextBlock
+                                Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                Style="{StaticResource AppBodyTextStyle}"
+                                Text="指定 Java 路径" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="关闭自动检测后使用此路径。" />
+                            <Grid ColumnSpacing="{StaticResource SpaceSm}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox
+                                    Grid.Column="0"
+                                    IsEnabled="{x:Bind ViewModel.IsJavaPathEditable, Mode=OneWay}"
+                                    PlaceholderText="例如 C:\Program Files\Java\jdk-21\bin\javaw.exe"
+                                    Text="{x:Bind ViewModel.JavaPath, Mode=TwoWay}" />
+                                <Button
+                                    Grid.Column="1"
+                                    Command="{x:Bind ViewModel.BrowseJavaPathCommand}"
+                                    Content="浏览…"
+                                    IsEnabled="{x:Bind ViewModel.IsJavaPathEditable, Mode=OneWay}" />
+                            </Grid>
+                        </StackPanel>
+
+                        <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="默认最小内存" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="新建实例时的初始 Xms 值。" />
+                            </StackPanel>
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                Style="{StaticResource AppBodyTextStyle}"
+                                Text="{x:Bind ViewModel.MinMemoryLabel, Mode=OneWay}" />
+                        </Grid>
+                        <Slider
+                            Maximum="8192"
+                            Minimum="512"
+                            StepFrequency="512"
+                            Value="{x:Bind ViewModel.MinMemoryMb, Mode=TwoWay}" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="默认最大内存" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="新建实例时的初始 Xmx 值，会自动不小于最小内存。" />
+                            </StackPanel>
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                Style="{StaticResource AppBodyTextStyle}"
+                                Text="{x:Bind ViewModel.MaxMemoryLabel, Mode=OneWay}" />
+                        </Grid>
+                        <Slider
+                            Maximum="32768"
+                            Minimum="1024"
+                            StepFrequency="512"
+                            Value="{x:Bind ViewModel.MaxMemoryMb, Mode=TwoWay}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- 下载 -->
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="{StaticResource SpaceMd}">
+                        <TextBlock Style="{StaticResource AppSectionTitleStyle}" Text="下载" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="下载源" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="国内网络建议使用 BMCLAPI 镜像。" />
+                            </StackPanel>
+                            <ComboBox
+                                Grid.Column="1"
+                                MinWidth="180"
+                                VerticalAlignment="Center"
+                                DisplayMemberPath="DisplayName"
+                                ItemsSource="{x:Bind ViewModel.DownloadSources}"
+                                SelectedItem="{x:Bind ViewModel.SelectedDownloadSource, Mode=TwoWay}" />
+                        </Grid>
+
+                        <Border Height="1" Background="{ThemeResource AppDividerBrush}" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="最大并发下载数" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="并发过高可能触发限速，建议 4–8。" />
+                            </StackPanel>
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                Style="{StaticResource AppBodyTextStyle}"
+                                Text="{x:Bind ViewModel.ConcurrencyLabel, Mode=OneWay}" />
+                        </Grid>
+                        <Slider
+                            Maximum="32"
+                            Minimum="1"
+                            StepFrequency="1"
+                            Value="{x:Bind ViewModel.MaxConcurrentDownloads, Mode=TwoWay}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- 诊断 -->
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="{StaticResource SpaceMd}">
+                        <TextBlock Style="{StaticResource AppSectionTitleStyle}" Text="诊断" />
+
+                        <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="日志级别" />
+                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="级别越高记录越详细，日志文件也越大。" />
+                            </StackPanel>
+                            <ComboBox
+                                Grid.Column="1"
+                                MinWidth="180"
+                                VerticalAlignment="Center"
+                                DisplayMemberPath="DisplayName"
+                                ItemsSource="{x:Bind ViewModel.LogLevels}"
+                                SelectedItem="{x:Bind ViewModel.SelectedLogLevel, Mode=TwoWay}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 数据 -->
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="{StaticResource SpaceMd}">
+                        <TextBlock Style="{StaticResource AppSectionTitleStyle}" Text="数据" />
+
+                        <StackPanel Spacing="{StaticResource SpaceXs}">
+                            <TextBlock
+                                Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                Style="{StaticResource AppBodyTextStyle}"
+                                Text="数据目录" />
+                            <TextBlock
+                                FontFamily="{StaticResource AppMonoFontFamily}"
+                                FontSize="{StaticResource FontSizeCaption}"
+                                Foreground="{ThemeResource AppTextSecondaryBrush}"
+                                Text="{x:Bind ViewModel.DataDirectory}" />
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="设置文件 settings.json 位于此目录。" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                            <Button Command="{x:Bind ViewModel.OpenDataDirectoryCommand}" Content="打开数据目录" />
+                            <Button Command="{x:Bind ViewModel.ResetSettingsCommand}">
+                                <TextBlock Foreground="{ThemeResource AppErrorBrush}" Text="恢复默认设置" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 状态栏 -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+            <Ellipse
+                Width="8"
+                Height="8"
+                VerticalAlignment="Center"
+                Fill="{ThemeResource AppAccentBrush}" />
+            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
         </StackPanel>
     </Grid>
 </Page>

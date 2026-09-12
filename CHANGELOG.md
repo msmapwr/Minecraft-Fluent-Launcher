@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ④-6｜设置页**：`Views/SettingsPage` 由占位页重做为设置中心，**接入真实持久化**。
+  - 分组：外观（主题 / 界面语言 / 界面动画 / 显示快照版本）、启动器行为（启动时检查更新 / 启动游戏后关闭启动器）、Java 运行时（自动检测 / 指定路径 / 默认最小与最大内存）、下载（下载源 / 最大并发数）、诊断（日志级别）、数据（数据目录、打开目录、恢复默认设置）。
+  - 所有开关与下拉改动都会立即写入 `%LOCALAPPDATA%\MinecraftFluentLauncher\settings.json` 并在下次启动恢复；最大内存自动不小于最小内存。
+  - 仅「浏览 Java 路径」「打开数据目录」为演示行为。
+- 扩展 `Models/AppSettings`：新增语言、动画、快照显示、更新检查、关闭策略、Java 检测与路径、内存上下限、下载源与并发数、日志级别等字段（均带默认值，旧设置文件可正常反序列化）。
+- 新增模型 `Models/AppLogLevel` 及标签扩展；`ISettingsService` 增加 `DataDirectory`，`JsonSettingsService` 实现之。
+- 新增视图模型 `ViewModels/SettingsPageViewModel`。
 - **大更新 ④-5｜账户页**：`Views/AccountsPage` 由占位页重做为账户管理页（Mock 数据）。
   - 微软账户卡片：登录状态徽章、登录 / 注销按钮（按状态互斥显示）、登录进度条；登录流程以 3 段文案模拟授权 → 获取 Xbox Live 凭据 → 获取 Minecraft 档案，**不打开浏览器、不保存凭据**。
   - 离线账户卡片：名称输入（限 16 字符、去重、空值校验）+ 账户列表（头像、最近使用与创建时间、「使用 / 删除」操作），并含空状态提示。
