@@ -58,6 +58,39 @@
         <Setter Property="Padding" Value="{StaticResource CardPadding}" />
     </Style>
 
+    <!-- ==================== 徽章 ==================== -->
+
+    <!-- 徽章（中性）：用于版本通道、加载器、安装状态等短标签 -->
+    <Style x:Key="AppBadgeStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource AppSurfaceAltBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource AppDividerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusSm}" />
+        <Setter Property="Padding" Value="8,2" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- 徽章（强调色）：用于「已安装」「当前」等需要突出的状态 -->
+    <Style x:Key="AppBadgeAccentStyle" TargetType="Border" BasedOn="{StaticResource AppBadgeStyle}">
+        <Setter Property="Background" Value="{ThemeResource AppAccentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <!-- 徽章内文字（中性） -->
+    <Style x:Key="AppBadgeTextStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}" />
+        <Setter Property="Foreground" Value="{ThemeResource AppTextSecondaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <!-- 徽章内文字（强调色底） -->
+    <Style x:Key="AppBadgeAccentTextStyle" TargetType="TextBlock" BasedOn="{StaticResource AppBadgeTextStyle}">
+        <Setter Property="Foreground" Value="{ThemeResource AppAccentTextBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
     <!-- ==================== 按钮 ==================== -->
 
     <!-- 主按钮（强调色）。用于页面唯一的首要操作，例如「启动游戏」。 -->

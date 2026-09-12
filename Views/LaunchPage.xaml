@@ -5,13 +5,226 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:WINUI.Models"
     mc:Ignorable="d">
 
-    <Grid Padding="{StaticResource PagePadding}">
-        <StackPanel Spacing="{StaticResource SpaceSm}">
+    <Grid Padding="{StaticResource PagePadding}" RowSpacing="{StaticResource SpaceLg}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 页头 -->
+        <StackPanel Grid.Row="0" Spacing="{StaticResource SpaceXs}">
             <TextBlock Style="{StaticResource AppPageTitleStyle}" Text="启动" />
-            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="选择版本并启动游戏。" />
-            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="占位页 · 将在「核心页面」阶段实现" />
+            <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="选择版本与加载器，确认运行配置后开始游戏。" />
         </StackPanel>
+
+        <ScrollViewer
+            Grid.Row="1"
+            VerticalScrollBarVisibility="Auto"
+            VerticalScrollMode="Auto">
+            <Grid ColumnSpacing="{StaticResource SpaceLg}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="360" />
+                </Grid.ColumnDefinitions>
+
+                <!-- ==================== 主列 ==================== -->
+                <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceLg}">
+
+                    <!-- 实例选择 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="实例" />
+
+                            <ComboBox
+                                HorizontalAlignment="Stretch"
+                                DisplayMemberPath="FullName"
+                                Header="版本与加载器"
+                                ItemsSource="{x:Bind ViewModel.Versions}"
+                                SelectedItem="{x:Bind ViewModel.SelectedVersion, Mode=TwoWay}" />
+
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                <Border Style="{StaticResource AppBadgeStyle}">
+                                    <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ViewModel.SelectedVersion.Loader, Mode=OneWay}" />
+                                </Border>
+                                <Border Style="{StaticResource AppBadgeStyle}">
+                                    <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ViewModel.SelectedVersion.ChannelLabel, Mode=OneWay}" />
+                                </Border>
+                                <Border Style="{StaticResource AppBadgeStyle}">
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceXs}">
+                                        <Ellipse
+                                            Width="8"
+                                            Height="8"
+                                            VerticalAlignment="Center"
+                                            Fill="{ThemeResource AppSuccessBrush}"
+                                            Visibility="{x:Bind ViewModel.SelectedVersion.IsInstalled, Mode=OneWay}" />
+                                        <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind ViewModel.SelectedVersion.InstallStateLabel, Mode=OneWay}" />
+                                    </StackPanel>
+                                </Border>
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceXs}">
+                                    <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="发布于" />
+                                    <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.SelectedVersion.ReleasedAtLabel, Mode=OneWay}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Grid ColumnSpacing="{StaticResource SpaceSm}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Spacing="{StaticResource SpaceXs}">
+                                    <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="安装目录" />
+                                    <TextBlock
+                                        FontFamily="{StaticResource AppMonoFontFamily}"
+                                        FontSize="{StaticResource FontSizeCaption}"
+                                        Foreground="{ThemeResource AppTextSecondaryBrush}"
+                                        Text="{x:Bind ViewModel.InstanceDirectory}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <Button
+                                    Grid.Column="1"
+                                    VerticalAlignment="Bottom"
+                                    Command="{x:Bind ViewModel.OpenInstanceFolderCommand}"
+                                    Content="打开目录" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 启动 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <Button
+                                MinHeight="56"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Command="{x:Bind ViewModel.PrimaryActionCommand}"
+                                IsEnabled="{x:Bind ViewModel.IsPrimaryActionEnabled, Mode=OneWay}"
+                                Style="{StaticResource AppAccentButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                    <FontIcon
+                                        FontFamily="{StaticResource AppIconFontFamily}"
+                                        FontSize="20"
+                                        Foreground="{ThemeResource AppAccentTextBrush}"
+                                        Glyph="{StaticResource IconPlayGlyph}" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="{StaticResource FontSizeSubtitle}"
+                                        FontWeight="SemiBold"
+                                        Text="{x:Bind ViewModel.PrimaryActionText, Mode=OneWay}" />
+                                </StackPanel>
+                            </Button>
+
+                            <ProgressBar
+                                Maximum="100"
+                                Value="{x:Bind ViewModel.LaunchProgress, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.IsLaunching, Mode=OneWay}" />
+
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                <Ellipse
+                                    Width="8"
+                                    Height="8"
+                                    VerticalAlignment="Center"
+                                    Fill="{ThemeResource AppAccentBrush}" />
+                                <TextBlock Style="{StaticResource AppBodyTextStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 运行配置 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="运行配置" />
+
+                            <Grid ColumnSpacing="{StaticResource SpaceMd}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource AppBodyTextStyle}"
+                                    Text="内存分配" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    FontSize="{StaticResource FontSizeBody}"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                    Text="{x:Bind ViewModel.MemoryLabel, Mode=OneWay}" />
+                            </Grid>
+
+                            <Slider
+                                Minimum="1024"
+                                Maximum="16384"
+                                StepFrequency="512"
+                                Value="{x:Bind ViewModel.MemoryMb, Mode=TwoWay}" />
+
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="Java 运行时：自动检测（演示数据）" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ==================== 侧列 ==================== -->
+                <StackPanel Grid.Column="1" Spacing="{StaticResource SpaceLg}">
+
+                    <!-- 账户 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceMd}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="账户" />
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceMd}">
+                                <PersonPicture
+                                    Width="44"
+                                    Height="44"
+                                    Initials="{x:Bind ViewModel.Account.Initials, Mode=OneWay}" />
+                                <StackPanel VerticalAlignment="Center" Spacing="{StaticResource SpaceXs}">
+                                    <TextBlock
+                                        FontSize="{StaticResource FontSizeBody}"
+                                        Style="{StaticResource AppSectionTitleStyle}"
+                                        Text="{x:Bind ViewModel.Account.Name, Mode=OneWay}" />
+                                    <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind ViewModel.Account.AccountType, Mode=OneWay}" />
+                                </StackPanel>
+                            </StackPanel>
+                            <Button HorizontalAlignment="Stretch" Content="切换账户" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 新闻与公告 -->
+                    <Border Style="{StaticResource AppCardStyle}">
+                        <StackPanel Spacing="{StaticResource SpaceSm}">
+                            <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="新闻与公告" />
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.News}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:NewsItem">
+                                        <StackPanel Padding="0,10" Spacing="{StaticResource SpaceXs}">
+                                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                                                <Border Style="{StaticResource AppBadgeStyle}">
+                                                    <TextBlock Style="{StaticResource AppBadgeTextStyle}" Text="{x:Bind Category}" />
+                                                </Border>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Style="{StaticResource AppCaptionTextStyle}"
+                                                    Text="{x:Bind PublishedAtLabel}" />
+                                            </StackPanel>
+                                            <TextBlock
+                                                FontWeight="SemiBold"
+                                                Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                                Style="{StaticResource AppBodyTextStyle}"
+                                                Text="{x:Bind Title}" />
+                                            <TextBlock
+                                                MaxLines="2"
+                                                Style="{StaticResource AppCaptionTextStyle}"
+                                                Text="{x:Bind Summary}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>

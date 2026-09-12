@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ④-1｜启动页**：`Views/LaunchPage` 由占位页重做为完整的启动控制台（Mock 数据）。
+  - 左列：实例卡片（版本/加载器下拉、加载器/通道/安装状态徽章、发布日期、安装目录）、启动卡片（强调色大按钮 + 分阶段进度条 + 状态行）、运行配置卡片（内存分配滑杆、Java 运行时）。
+  - 右列：账户卡片（`PersonPicture` 头像 + 玩家名 + 账户类型）、新闻与公告卡片。
+  - 「启动游戏」为纯 UI 演示：模拟「校验文件 → 准备 Java 运行时 → 启动」三阶段，**不拉起任何 Java 进程**；运行中按钮切换为「结束游戏」。
+- 新增数据层接缝 `Services/ILauncherDataService`，以及 Mock 实现 `Services/MockLauncherDataService`（硬编码数据，无网络请求）；接入真实启动核心时仅需替换 DI 注册。
+- 新增模型 `Models/GameVersion`、`Models/NewsItem`、`Models/PlayerAccount`、`Models/VersionChannel`。
+- 新增视图模型 `ViewModels/LaunchPageViewModel`。
+- `Themes/Controls.xaml` 新增徽章体系：`AppBadgeStyle` / `AppBadgeAccentStyle` 与对应文字样式 `AppBadgeTextStyle` / `AppBadgeAccentTextStyle`。
+- `App` 新增 `GetService<T>()` 静态助手，供由 `Frame.Navigate(Type)` 反射创建、无法构造函数注入的页面解析视图模型。
 - **产品定名与品牌化**：产品正式命名为 **Minecraft Fluent Launcher（MFL）**。
   - 应用图标取自 `Assets/App.jpg`（像素风金苹果），程序化去白底后生成全套带透明通道的多尺寸资源：`Square44x44Logo`、`Square150x150Logo`、`StoreLogo`、`LockScreenLogo`、`Wide310x150Logo`、`SplashScreen`，以及多尺寸 `App.ico`，另新增应用内使用、无缩放限定符的 `Assets/AppIcon.png`。
   - `WINUI.csproj` 新增 `<AssemblyName>MinecraftFluentLauncher</AssemblyName>` 与 `<ApplicationIcon>Assets\App.ico</ApplicationIcon>`（`RootNamespace` 保持 `WINUI` 不变，避免无收益的全量改名）。
