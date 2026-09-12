@@ -12,6 +12,13 @@
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+    <!--
+      使用最新 C# 语言版本以启用 partial property：
+      CommunityToolkit.Mvvm 的 [ObservableProperty] 需要 partial property 才能生成
+      WinRT/AOT 友好的可观察属性（否则触发 MVVMTK0045 警告）。
+      因此本项目要求 .NET SDK 9 及以上（推荐 10）。
+    -->
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,6 +44,8 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
   </ItemGroup>

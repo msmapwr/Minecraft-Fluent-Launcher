@@ -1,49 +1,46 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using WINUI.ViewModels;
+using WINUI.Views;
 
 namespace WINUI
 {
     /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
+    /// 应用程序入口，负责构建 DI 容器并启动主窗口。
     /// </summary>
     public partial class App : Application
     {
         private Window? _window;
 
         /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
+        /// 全局服务容器。优先使用构造函数注入；此处仅为无法注入的场景提供兜底访问。
         /// </summary>
+        public static IServiceProvider Services { get; private set; } = null!;
+
         public App()
         {
             InitializeComponent();
+            Services = ConfigureServices();
         }
 
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        /// <summary>注册应用所需的视图模型与窗口。</summary>
+        private static IServiceProvider ConfigureServices()
         {
-            _window = new MainWindow();
+            var services = new ServiceCollection();
+
+            // ViewModels
+            services.AddSingleton<MainWindowViewModel>();
+
+            // Views
+            services.AddSingleton<MainWindow>();
+
+            return services.BuildServiceProvider();
+        }
+
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        {
+            _window = Services.GetRequiredService<MainWindow>();
             _window.Activate();
         }
     }
