@@ -17,6 +17,11 @@
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <!--
+      打包应用（single-project MSIX）具有包标识，无需 DeploymentManager 自动初始化；
+      同时避免单元测试主机加载本程序集时在模块初始化器里抛 REGDB_E_CLASSNOTREG。
+    -->
+    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
     <Nullable>enable</Nullable>
     <!--
       使用最新 C# 语言版本以启用 partial property：
@@ -55,6 +60,19 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
+  </ItemGroup>
+
+  <!--
+    测试项目位于仓库子目录 tests\：SDK 默认通配会把它的 .cs 误编进主项目
+    （主项目没有 xunit 引用，会连锁出 CS0246 与 XAML 编译错误），必须显式排除。
+  -->
+  <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
+  </ItemGroup>
+
+  <!-- 测试项目需要访问 internal 类型（如源生成的 SettingsJsonContext）。 -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="WINUI.Tests" />
   </ItemGroup>
 
   <!--

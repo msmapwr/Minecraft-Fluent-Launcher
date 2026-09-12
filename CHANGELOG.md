@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ⑥-1｜核心逻辑单元测试（xUnit）**：新增测试项目 `tests/WINUI.Tests`，覆盖不依赖 UI 线程的纯逻辑，**32 个测试全部通过**。
+  - 覆盖范围：`MockLauncherDataService`（数据规模、加载器可用性规则——1.21.x 无 Forge、1.20.1 四加载器齐备、1.12.2 无 NeoForge、快照/远古/非法版本返回空、加载器推荐版本必须在其版本列表内）、`ThemeService`（单一状态源：持久化、`ThemeChanged` 广播、同值不广播不落盘、未绑定根元素安全）、`NavigationService`（未初始化/未知路由安全短路）、`PageViewModelBase`（加载/内容/空/错误四态转换、错误与加载态不被筛选覆盖）、`AppSettings`（默认值契约、JSON 序列化往返、旧文件缺字段回退默认值）。
+  - **踩坑修复**：SDK 默认通配会把 `tests\` 下源码误编进主项目（主项目无 xunit 引用 → CS0246 → XAML 连锁编译错误），已在 `WINUI.csproj` 显式 `Compile Remove="tests\**\*.cs"`。
+  - **踩坑修复**：主程序集的 Windows App SDK 模块初始化器（`DeploymentManager.Initialize`）在测试主机中抛 `REGDB_E_CLASSNOTREG` 导致全部测试失败。打包应用本就具有包标识、无需 DeploymentManager 自动初始化，已在主项目设 `WindowsAppSdkDeploymentManagerInitialize=false`（主程序运行行为不变）；测试项目亦显式关闭其余三项自动初始化。
+  - 测试项目通过 `InternalsVisibleTo` 访问源生成的 `SettingsJsonContext`（顺带验证了 camelCase 序列化契约）；模块初始化器统一关闭 Mock 的模拟耗时与故障注入，保证测试不受本机环境变量影响、零延迟执行。
 - **大更新 ⑤-6｜统一主题状态源**：侧边栏底部与设置页的两处主题下拉不再各持一份状态，任一处切换另一处立即同步。
   - `IThemeService` 成为主题的单一状态源：新增共享选项列表 `Options`（跟随系统 / 浅色 / 深色，单一来源）与变更广播事件 `ThemeChanged`（仅在实际发生变化时触发）。
   - `MainWindowViewModel` 与 `SettingsPageViewModel` 的主题选项列表均改为引用服务的 `Options`，并订阅广播：在设置页切主题时侧边栏下拉同步选中，在侧边栏切主题时设置页下拉同步选中（同步期间抑制回写，避免循环触发，也不误刷状态栏文案）。
