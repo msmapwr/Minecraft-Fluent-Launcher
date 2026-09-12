@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
+using WINUI.Services;
 using WINUI.ViewModels;
 using WINUI.Views;
 
@@ -28,6 +29,9 @@ namespace WINUI
         private static IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
+
+            // Services
+            services.AddSingleton<IThemeService, ThemeService>();
 
             // ViewModels
             services.AddSingleton<MainWindowViewModel>();

@@ -31,5 +31,14 @@
                 Foreground="{ThemeResource AppTextSecondaryBrush}"
                 Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
         </StackPanel>
+
+        <ComboBox
+            Margin="{StaticResource PagePadding}"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            DisplayMemberPath="DisplayName"
+            Header="主题"
+            ItemsSource="{x:Bind ViewModel.ThemeOptions}"
+            SelectedItem="{x:Bind ViewModel.SelectedThemeOption, Mode=TwoWay}" />
     </Grid>
 </Window>

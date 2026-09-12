@@ -1,13 +1,18 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.Generic;
+using WINUI.Models;
+using WINUI.Services;
 
 namespace WINUI.ViewModels;
 
 /// <summary>
 /// 主窗口视图模型。
-/// 当前仅承载窗口标题与状态文案，用于打通「DI 注入 → View 绑定」链路。
+/// 承载窗口标题、状态文案与主题切换，用于打通「DI → MVVM → 主题」链路。
 /// </summary>
 public sealed partial class MainWindowViewModel : ObservableObject
 {
+    private readonly IThemeService _themeService;
+
     /// <summary>应用标题。占位名，待产品定名后统一替换。</summary>
     [ObservableProperty]
     public partial string AppTitle { get; set; }
@@ -16,9 +21,27 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial string StatusText { get; set; }
 
-    public MainWindowViewModel()
+    /// <summary>当前选中的主题选项。</summary>
+    [ObservableProperty]
+    public partial ThemeOption SelectedThemeOption { get; set; }
+
+    /// <summary>可选主题列表。</summary>
+    public IReadOnlyList<ThemeOption> ThemeOptions { get; } =
+    [
+        new(AppTheme.System, "跟随系统"),
+        new(AppTheme.Light, "浅色"),
+        new(AppTheme.Dark, "深色"),
+    ];
+
+    public MainWindowViewModel(IThemeService themeService)
     {
+        _themeService = themeService;
+
         AppTitle = "Minecraft 启动器";
         StatusText = "项目骨架已就绪";
+        SelectedThemeOption = ThemeOptions[0];
     }
+
+    /// <summary>选中项变化时立即应用主题。</summary>
+    partial void OnSelectedThemeOptionChanged(ThemeOption value) => _themeService.SetTheme(value.Value);
 }
