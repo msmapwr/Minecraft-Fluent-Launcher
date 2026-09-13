@@ -150,7 +150,7 @@
 | 小更新 | 内容 | 状态 |
 |---|---|---|
 | 1 | 引入 CMLLib.Core；`ILauncherDataService` 新增真实实现（版本清单走官方 manifest v2，映射到 `GameVersion`），DI 切换，其余查询暂委托 Mock | ✅ 完成 |
-| 2 | 实例管理真实化：实例目录（独立于官方 `.minecraft`）+ 安装版本 + `instances.json` 索引；设置页下载源接入 BMCLAPI 镜像 | ⏳ 待开始 |
+| 2 | 实例管理真实化：实例目录（独立于官方 `.minecraft`）+ 安装版本 + `instances.json` 索引；设置页下载源接入 BMCLAPI 镜像 | ✅ 完成（实例列表改为真实扫描 versions 目录；安装接 CMLLib `InstallAsync`；BMCLAPI 替换资源/库下载服务器） |
 | 3 | Java 运行时：自动检测（JAVA_HOME / 注册表 / 常见路径）+ 手动路径生效 | ⏳ 待开始 |
 | 4 | 启动 vanilla：离线会话启动 + 启动页真实化 + 启动日志接线日志页 | ⏳ 待开始 |
 | 5 | （v0.3）加载器安装：Fabric / NeoForge / Forge / Quilt + 版本详情页真实安装 | ⏳ 待开始 |

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -13,7 +14,8 @@ namespace WINUI.ViewModels;
 /// 版本详情页的视图模型。
 /// <para>
 /// 展示某个游戏版本的信息，并允许<b>多选模组加载器</b>后一并安装。
-/// 安装为纯 UI 演示：只走进度与文案，<b>不下载任何文件，也不创建真实实例</b>。
+/// 大更新 ⑦-2 起「安装」接入 CMLLib 真实下载（安装到启动器自有游戏目录）；
+/// 加载器安装尚未实现（⑦-5），勾选加载器时按原版安装并在摘要中说明。
 /// </para>
 /// <para>
 /// 页面状态（加载 / 内容 / 错误）由 <see cref="PageViewModelBase"/> 提供。
@@ -23,6 +25,8 @@ namespace WINUI.ViewModels;
 public sealed partial class VersionDetailPageViewModel : PageViewModelBase
 {
     private readonly ILauncherDataService _dataService;
+    private readonly IGameLauncherService _gameLauncher;
+    private readonly IInteractionService _interaction;
     private readonly INavigationService _navigation;
 
     private string _summaryTitle = "—";
@@ -103,9 +107,15 @@ public sealed partial class VersionDetailPageViewModel : PageViewModelBase
     /// <summary>「重试」按钮的文案，与 <see cref="RetryCommand"/> 的动作保持一致。</summary>
     public string RetryText => Version is null ? "返回下载中心" : "重试";
 
-    public VersionDetailPageViewModel(ILauncherDataService dataService, INavigationService navigation)
+    public VersionDetailPageViewModel(
+        ILauncherDataService dataService,
+        IGameLauncherService gameLauncher,
+        IInteractionService interaction,
+        INavigationService navigation)
     {
         _dataService = dataService;
+        _gameLauncher = gameLauncher;
+        _interaction = interaction;
         _navigation = navigation;
         StatusMessage = "正在读取版本信息…";
     }
@@ -239,7 +249,7 @@ public sealed partial class VersionDetailPageViewModel : PageViewModelBase
 
     private bool CanInstall() => Version is not null && !IsInstalling;
 
-    /// <summary>按当前选择一并安装（演示）。</summary>
+    /// <summary>按当前选择一并安装（真实下载；加载器安装将在 ⑦-5 接入）。</summary>
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private async Task InstallAsync()
     {
@@ -249,25 +259,31 @@ public sealed partial class VersionDetailPageViewModel : PageViewModelBase
         }
 
         IsInstalling = true;
+        InstallProgress = 5;
         try
         {
-            InstallProgress = 0;
+            var selectedLoaders = Loaders.Count(loader => loader.IsSelected);
+            StatusMessage = selectedLoaders > 0
+                ? "加载器安装将在后续版本支持，本次按原版安装…"
+                : "开始下载版本文件…";
 
-            string[] stages = ["校验版本文件", "准备模组加载器", "生成实例目录"];
-            var stepCount = stages.Length * 4;
-
-            foreach (var stage in stages)
-            {
-                StatusMessage = $"{stage}…";
-                for (var step = 0; step < 4; step++)
-                {
-                    await Task.Delay(80);
-                    InstallProgress = System.Math.Min(100, InstallProgress + 100.0 / stepCount);
-                }
-            }
+            // CMLLib：下载并安装版本（已安装时立即返回）。
+            await _gameLauncher.InstallAsync(Version.Version);
 
             InstallProgress = 100;
-            StatusMessage = $"已创建实例「{InstanceName}」（演示，未下载任何文件）";
+            StatusMessage = $"已安装到 {_gameLauncher.GamePath.BasePath}";
+            _interaction.Notify(
+                $"版本 {Version.Version} 已安装完成",
+                NotificationSeverity.Success,
+                "安装完成");
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"安装失败：{ex.Message}";
+            _interaction.Notify(
+                $"版本 {Version.Version} 安装失败：{ex.Message}",
+                NotificationSeverity.Error,
+                "安装失败");
         }
         finally
         {

@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ⑦-2｜实例管理真实化 + BMCLAPI 下载源**：新增 `Services/IGameLauncherService` / `GameLauncherService`（CMLLib 门面）。
+  - 游戏目录改为启动器自有路径（`%LOCALAPPDATA%\MinecraftFluentLauncher\game`），**不再使用官方 `.minecraft`**；实例列表由真实扫描 versions 目录生成（含占用空间统计与通道推断）。
+  - 版本详情页「一起安装」接入真实下载（CMLLib `InstallAsync`），完成后发出成功通知；加载器安装尚未实现（⑦-5），勾选加载器时按原版安装并明确提示。
+  - 设置页下载源切换即时生效：BMCLAPI 镜像替换资源与库下载服务器（`DefaultFileExtractors`），官方源走 Mojang 默认。
+  - 已知限制：版本清单本身仍走官方 URL（清单很小）；设置页「社区镜像」暂等同官方源。
 - **大更新 ⑦-1｜接入 CMLLib.Core，版本清单真实化**：引入 `CmlLib.Core 4.0.6`，新增 `Services/CoreLauncherDataService`（组合模式）——`GetVersionsAsync` 改走官方版本清单（manifest v2，含快照与远古版本），映射到既有 `GameVersion` 模型（`MVersionType` → `VersionChannel`，本地安装状态按 versions 目录判定），其余查询暂委托 Mock 并将随 ⑦-2~⑦-7 逐项真实化；DI 注册已切换。既有页面与视图模型零改动。
 - **大更新 ⑥-3｜MSIX 打包与 GitHub Release（v0.1.0）**：新增 `.github/workflows/release.yml`，推送 `v*` 标签自动发布。
   - 以 `dotnet publish` 产出 **self-contained（含 Windows App SDK 运行时）x64 未签名 MSIX** 与 **便携 zip**，附到 GitHub Release（自动生成发布说明）。未签名 MSIX 需开发者模式或受信证书才能安装；日常使用建议解压 zip 直接运行。

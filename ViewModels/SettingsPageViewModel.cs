@@ -148,16 +148,21 @@ public sealed partial class SettingsPageViewModel : ObservableObject
     /// <summary>「界面动画」开关的真正持有者，切换后立即广播到界面。</summary>
     private readonly IAnimationService _animation;
 
+    /// <summary>真实启动核心（⑦-2）：下载源切换后立即应用镜像。</summary>
+    private readonly IGameLauncherService? _gameLauncher;
+
     public SettingsPageViewModel(
         ISettingsService settingsService,
         IThemeService themeService,
         IInteractionService interaction,
-        IAnimationService animation)
+        IAnimationService animation,
+        IGameLauncherService? gameLauncher = null)
     {
         _settingsService = settingsService;
         _themeService = themeService;
         _interaction = interaction;
         _animation = animation;
+        _gameLauncher = gameLauncher;
         _settings = settingsService.Settings;
 
         StatusMessage = "设置会自动保存";
@@ -309,6 +314,9 @@ public sealed partial class SettingsPageViewModel : ObservableObject
     {
         _settings.DownloadSource = value.Value;
         Persist($"下载源已切换为「{value.DisplayName}」");
+
+        // 真实启动核心（⑦-2）：切换后立即应用下载镜像（BMCLAPI / 官方）。
+        _gameLauncher?.ApplyDownloadSource(value.Value);
     }
 
     partial void OnMaxConcurrentDownloadsChanged(double value)
