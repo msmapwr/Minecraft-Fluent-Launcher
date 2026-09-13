@@ -135,7 +135,7 @@
 |---|---|---|
 | 1 | UI 冒烟测试 / 核心逻辑单元测试 | ✅ 完成（xUnit，32 个测试全绿，本地与 CI 均通过） |
 | 2 | CI（GitHub Actions） | ✅ 完成（首次运行 success） |
-| 3 | MSIX 打包 + Release + Tag | ✅ 已配置并触发（tag v0.1.0） |
+| 3 | MSIX 打包 + Release + Tag | ✅ 已配置并触发（tag v0.1.0，MSIX 已发布；便携 zip 修复后待下次 tag / 手动触发重新发布） |
 
 > 本阶段（UI）之后：接入真实启动核心（版本下载、账户认证、JVM 启动、模组解析）。
 
