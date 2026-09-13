@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-09-13
+## [0.2.0] - 2026-09-13
 
 ### Added
 
@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 设置页下载源切换即时生效：BMCLAPI 镜像替换资源与库下载服务器（`DefaultFileExtractors`），官方源走 Mojang 默认。
   - 已知限制：版本清单本身仍走官方 URL（清单很小）；设置页「社区镜像」暂等同官方源。
 - **大更新 ⑦-1｜接入 CMLLib.Core，版本清单真实化**：引入 `CmlLib.Core 4.0.6`，新增 `Services/CoreLauncherDataService`（组合模式）——`GetVersionsAsync` 改走官方版本清单（manifest v2，含快照与远古版本），映射到既有 `GameVersion` 模型（`MVersionType` → `VersionChannel`，本地安装状态按 versions 目录判定），其余查询暂委托 Mock 并将随 ⑦-2~⑦-7 逐项真实化；DI 注册已切换。既有页面与视图模型零改动。
+
+## [0.1.0] - 2026-09-13
+
+### Added
+
 - **大更新 ⑥-3｜MSIX 打包与 GitHub Release（v0.1.0）**：新增 `.github/workflows/release.yml`，推送 `v*` 标签自动发布。
   - 以 `dotnet publish` 产出 **self-contained（含 Windows App SDK 运行时）x64 未签名 MSIX** 与 **便携 zip**，附到 GitHub Release（自动生成发布说明）。未签名 MSIX 需开发者模式或受信证书才能安装；日常使用建议解压 zip 直接运行。
   - 打包踩坑：WinUI 单项目 MSIX 在 `GenerateAppxPackageOnBuild` 模式下 `publish` 目录结构不固定，便携包改为**独立的第二次 `publish`**（`GenerateAppxPackageOnBuild=false -o <dir>`）产出确定目录；MSIX 缺失只告警不阻断便携包。工作流另支持 `workflow_dispatch` 手动指定 tag 重新发布，无需移动 tag。
