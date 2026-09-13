@@ -3,9 +3,6 @@
 [![CI](https://github.com/msmapwr/Minecraft-Fluent-Launcher/actions/workflows/ci.yml/badge.svg)](https://github.com/msmapwr/Minecraft-Fluent-Launcher/actions/workflows/ci.yml)
 
 一款基于 **WinUI 3 / Windows App SDK** 开发的 Minecraft 桌面启动器，主要面向 Windows 平台，使用 Windows Fluent 设计风格。
-
-> 项目名与产品名暂为占位，后续确定正式名称后会统一替换。
-
 ---
 
 ## 特点
