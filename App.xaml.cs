@@ -47,8 +47,9 @@ namespace WINUI
             services.AddSingleton<IInteractionService, InteractionService>();
             services.AddSingleton<IAnimationService, AnimationService>();
 
-            // 数据来源：UI 阶段使用 Mock 实现，接入真实启动核心时替换此处注册即可。
-            services.AddSingleton<ILauncherDataService, MockLauncherDataService>();
+            // 数据来源：⑦-1 起版本清单走 CMLLib 真实实现，其余查询暂由 Mock 承载（随 ⑦-2~⑦-7 真实化）。
+            services.AddSingleton<MockLauncherDataService>();
+            services.AddSingleton<ILauncherDataService, CoreLauncherDataService>();
 
             // ViewModels
             services.AddSingleton<MainWindowViewModel>();
