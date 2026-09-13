@@ -30,31 +30,33 @@ jobs:
           -p:SelfContained=true
           -p:WindowsAppSDKSelfContained=true
           -p:GenerateAppxPackageOnBuild=true
-          -p:AppxPackageDir="${{ github.workspace }}\msix"
+          -p:AppxPackageDir="${{ github.workspace }}\msix\"
           -p:UapAppxPackageBuildMode=SideloadOnly
+          -p:AppxPackageSigningEnabled=false
 
-      - name: Locate MSIX
-        id: msix
+      - name: Collect artifacts
         shell: pwsh
         run: |
-          $msix = Get-ChildItem -Path "${{ github.workspace }}\msix" -Recurse -Filter *.msix | Select-Object -First 1
-          if (-not $msix) { throw "No .msix produced" }
-          "path=$($msix.FullName)" >> $env:GITHUB_OUTPUT
-          "name=$($msix.Name)" >> $env:GITHUB_OUTPUT
+          $out = Join-Path $env:GITHUB_WORKSPACE "artifacts"
+          New-Item -ItemType Directory -Path $out -Force | Out-Null
 
-      - name: Collect portable zip
-        shell: pwsh
-        run: |
-          $appDir = Get-ChildItem -Path "WINUI\AppPackages" -Recurse -Directory -Filter "*_x64*" | Select-Object -First 1
-          if (-not $appDir) { $appDir = Get-ChildItem -Path "msix" -Recurse -Directory | Where-Object { Get-ChildItem $_ -Filter *.exe -Recurse } | Select-Object -First 1 }
-          if (-not $appDir) { throw "No app output directory found" }
-          Compress-Archive -Path (Join-Path $appDir.FullName '*') -DestinationPath "${{ github.workspace }}\MinecraftFluentLauncher-portable-win-x64.zip" -Force
+          # MSIX：优先包目录（AppxPackageDir 必须以反斜杠结尾才生效），兜底全仓库扫描
+          $msix = Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE "msix"), "WINUI\AppPackages" -Recurse -Include *.msix,*.msixupload -File -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($msix) { Copy-Item $msix.FullName $out }
+
+          # 便携 zip：dotnet publish 的确定输出目录
+          $publishDir = "WINUI\bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\publish"
+          if (Test-Path $publishDir) {
+            Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath (Join-Path $out "MinecraftFluentLauncher-portable-win-x64.zip") -Force
+          }
+
+          $files = Get-ChildItem $out
+          if (-not $files) { throw "No artifacts collected (no msix and no publish output)" }
+          $files | ForEach-Object { Write-Host "artifact: $($_.Name) ($([math]::Round($_.Length/1MB,1)) MB)" }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
           generate_release_notes: true
-          files: |
-            ${{ steps.msix.outputs.path }}
-            MinecraftFluentLauncher-portable-win-x64.zip
+          files: artifacts/*
