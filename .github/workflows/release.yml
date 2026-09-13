@@ -3,6 +3,12 @@ name: Release
 on:
   push:
     tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to publish (e.g. v0.1.0)
+        required: true
+        default: v0.1.0
 
 permissions:
   contents: write
@@ -15,13 +21,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref_name }}
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
 
-      - name: Publish self-contained package (x64)
+      # 第一次发布：产出未签名 MSIX（打包模式下 publish 目录结构不固定，只取包产物）
+      - name: Publish MSIX (x64, self-contained)
         run: >
           dotnet publish WINUI.csproj
           -c Release
@@ -34,33 +43,41 @@ jobs:
           -p:UapAppxPackageBuildMode=SideloadOnly
           -p:AppxPackageSigningEnabled=false
 
+      # 第二次发布：产出明确的便携目录（不打包），供 zip 使用
+      - name: Publish portable output (x64, self-contained)
+        run: >
+          dotnet publish WINUI.csproj
+          -c Release
+          -p:Platform=x64
+          -p:RuntimeIdentifierOverride=win-x64
+          -p:SelfContained=true
+          -p:WindowsAppSDKSelfContained=true
+          -p:GenerateAppxPackageOnBuild=false
+          -o "${{ github.workspace }}\portable"
+
       - name: Collect artifacts
         shell: pwsh
         run: |
           $out = Join-Path $env:GITHUB_WORKSPACE "artifacts"
           New-Item -ItemType Directory -Path $out -Force | Out-Null
 
-          # MSIX：优先包目录（AppxPackageDir 必须以反斜杠结尾才生效），兜底全仓库扫描
-          $msix = Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE "msix"), "WINUI\AppPackages" -Recurse -Include *.msix,*.msixupload -File -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($msix) { Copy-Item $msix.FullName $out }
+          # MSIX：AppxPackageDir 必须以反斜杠结尾才生效；缺失只告警，不阻断便携包
+          $msix = Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE "msix") -Recurse -Include *.msix,*.msixupload -File -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($msix) { Copy-Item $msix.FullName $out } else { Write-Host "::warning::No MSIX package found" }
 
-          # 便携 zip：dotnet publish 的确定输出目录；找不到时兜底按 exe 所在目录定位
-          $publishDir = "WINUI\bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\publish"
-          if (-not (Test-Path $publishDir)) {
-            $exe = Get-ChildItem -Path "WINUI\bin\x64\Release" -Recurse -Filter "MinecraftFluentLauncher.exe" -File -ErrorAction SilentlyContinue |
-              Sort-Object { if ($_.DirectoryName -like "*publish*") { 0 } else { 1 } } | Select-Object -First 1
-            if ($exe) { $publishDir = $exe.DirectoryName }
-          }
-          if (-not (Test-Path $publishDir)) { throw "Publish output directory not found" }
-          Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath (Join-Path $out "MinecraftFluentLauncher-portable-win-x64.zip") -Force
+          # 便携 zip：来自明确的 -o 输出目录
+          $portable = Join-Path $env:GITHUB_WORKSPACE "portable"
+          if (-not (Test-Path $portable)) { throw "Portable publish output missing: $portable" }
+          Compress-Archive -Path (Join-Path $portable '*') -DestinationPath (Join-Path $out "MinecraftFluentLauncher-portable-win-x64.zip") -Force
 
           $files = Get-ChildItem $out
-          if (-not $files) { throw "No artifacts collected (no msix and no publish output)" }
+          if (-not $files) { throw "No artifacts collected" }
           $files | ForEach-Object { Write-Host "artifact: $($_.Name) ($([math]::Round($_.Length/1MB,1)) MB)" }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ github.ref_name }}
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: ${{ github.event.inputs.tag || github.ref_name }}
           generate_release_notes: true
           files: artifacts/*
