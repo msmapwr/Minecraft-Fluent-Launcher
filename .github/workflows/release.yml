@@ -44,11 +44,15 @@ jobs:
           $msix = Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE "msix"), "WINUI\AppPackages" -Recurse -Include *.msix,*.msixupload -File -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($msix) { Copy-Item $msix.FullName $out }
 
-          # 便携 zip：dotnet publish 的确定输出目录
+          # 便携 zip：dotnet publish 的确定输出目录；找不到时兜底按 exe 所在目录定位
           $publishDir = "WINUI\bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\publish"
-          if (Test-Path $publishDir) {
-            Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath (Join-Path $out "MinecraftFluentLauncher-portable-win-x64.zip") -Force
+          if (-not (Test-Path $publishDir)) {
+            $exe = Get-ChildItem -Path "WINUI\bin\x64\Release" -Recurse -Filter "MinecraftFluentLauncher.exe" -File -ErrorAction SilentlyContinue |
+              Sort-Object { if ($_.DirectoryName -like "*publish*") { 0 } else { 1 } } | Select-Object -First 1
+            if ($exe) { $publishDir = $exe.DirectoryName }
           }
+          if (-not (Test-Path $publishDir)) { throw "Publish output directory not found" }
+          Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath (Join-Path $out "MinecraftFluentLauncher-portable-win-x64.zip") -Force
 
           $files = Get-ChildItem $out
           if (-not $files) { throw "No artifacts collected (no msix and no publish output)" }
