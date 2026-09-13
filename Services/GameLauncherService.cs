@@ -50,8 +50,8 @@ public sealed class GameLauncherService : IGameLauncherService
         {
             var extractors = DefaultFileExtractors.CreateDefault(
                 parameters.HttpClient,
-                parameters.RulesEvaluator,
-                parameters.JavaPathResolver);
+                parameters.RulesEvaluator!,
+                parameters.JavaPathResolver!);
 
             if (extractors.Asset is not null)
             {
@@ -111,5 +111,32 @@ public sealed class GameLauncherService : IGameLauncherService
         }
 
         return File.Exists(Path.Combine(versionsDir, versionId, versionId + ".json"));
+    }
+
+    /// <inheritdoc />
+    public System.Diagnostics.Process LaunchVanilla(
+        string versionId,
+        string playerName,
+        string? javaPath,
+        int maxRamMb,
+        CancellationToken cancellationToken = default)
+    {
+        var option = new CmlLib.Core.ProcessBuilder.MLaunchOption
+        {
+            Session = CmlLib.Core.Auth.MSession.CreateOfflineSession(playerName),
+            MaximumRamMb = maxRamMb,
+        };
+
+        if (!string.IsNullOrWhiteSpace(javaPath))
+        {
+            option.JavaPath = javaPath;
+        }
+
+        // 版本未安装时先自动下载（InstallAsync 对已安装版本幂等）。
+        Launcher.InstallAsync(versionId, cancellationToken).GetAwaiter().GetResult();
+
+        var process = Launcher.BuildProcessAsync(versionId, option).GetAwaiter().GetResult();
+        process.Start();
+        return process;
     }
 }

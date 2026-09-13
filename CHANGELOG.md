@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **大更新 ⑦-4｜vanilla 真实启动 + 日志接线**：启动页「启动游戏」接入 CMLLib 真实启动链路。
+  - 启动流程：校验/下载选定版本（未安装自动补齐）→ 解析 Java → 以**离线会话**（账户页演示名）拉起 Java 进程，内存分配取启动页滑条。
+  - 新增 `Services/ILogStore` / `LogStore`：进程 stdout/stderr 实时写入（按 `[INFO]/[WARN]/[ERROR]` 前缀粗分级），日志页**订阅增量实时展示**（后台线程经 Dispatcher 调度追加），游戏退出自动回收状态；仓库为空时回退演示数据。
+  - 启动失败与缺少 Java 均有状态栏 + InfoBar 通知反馈；「结束游戏」真实结束进程树。
+  - 已知限制：离线会话不校验正版；安装阶段进度暂无逐文件回调（显示为阶段文案）。
+- **大更新 ⑦-3｜Java 运行时检测**：新增 `Services/IJavaLocatorService` / `JavaLocatorService`，扫描 **JAVA_HOME、注册表（JavaSoft JDK/JRE）、常见安装路径（Oracle / Adoptium / Microsoft / Zulu / Corretto / BellSoft）、PATH**。
+  - 设置页「自动检测 Java」下新增检测结果摘要与「重新检测」按钮；手动路径模式不变；启动时优先使用手动路径，否则取检测结果。
 - **大更新 ⑦-2｜实例管理真实化 + BMCLAPI 下载源**：新增 `Services/IGameLauncherService` / `GameLauncherService`（CMLLib 门面）。
   - 游戏目录改为启动器自有路径（`%LOCALAPPDATA%\MinecraftFluentLauncher\game`），**不再使用官方 `.minecraft`**；实例列表由真实扫描 versions 目录生成（含占用空间统计与通道推断）。
   - 版本详情页「一起安装」接入真实下载（CMLLib `InstallAsync`），完成后发出成功通知；加载器安装尚未实现（⑦-5），勾选加载器时按原版安装并明确提示。

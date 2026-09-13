@@ -192,6 +192,25 @@
                                 OnContent="" />
                         </Grid>
 
+                        <!-- Java 检测结果（⑦-3）：真实扫描本机运行时 -->
+                        <Grid ColumnSpacing="{StaticResource SpaceSm}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                Foreground="{ThemeResource AppTextSecondaryBrush}"
+                                Style="{StaticResource AppCaptionTextStyle}"
+                                Text="{x:Bind ViewModel.JavaDetectSummary, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                            <Button
+                                Grid.Column="1"
+                                VerticalAlignment="Top"
+                                Command="{x:Bind ViewModel.RefreshJavaDetectCommand}"
+                                Content="重新检测" />
+                        </Grid>
+
                         <StackPanel Spacing="{StaticResource SpaceXs}">
                             <TextBlock
                                 Foreground="{ThemeResource AppTextPrimaryBrush}"

@@ -142,6 +142,10 @@ public sealed partial class SettingsPageViewModel : ObservableObject
     /// <summary>手动 Java 路径是否可编辑。</summary>
     public bool IsJavaPathEditable => !AutoDetectJava;
 
+    /// <summary>Java 自动检测结果摘要（⑦-3）。</summary>
+    [ObservableProperty]
+    public partial string JavaDetectSummary { get; set; }
+
     /// <summary>破坏性操作的二次确认与操作结果通知。</summary>
     private readonly IInteractionService _interaction;
 
@@ -151,18 +155,23 @@ public sealed partial class SettingsPageViewModel : ObservableObject
     /// <summary>真实启动核心（⑦-2）：下载源切换后立即应用镜像。</summary>
     private readonly IGameLauncherService? _gameLauncher;
 
+    /// <summary>本机 Java 检测（⑦-3）。</summary>
+    private readonly IJavaLocatorService? _javaLocator;
+
     public SettingsPageViewModel(
         ISettingsService settingsService,
         IThemeService themeService,
         IInteractionService interaction,
         IAnimationService animation,
-        IGameLauncherService? gameLauncher = null)
+        IGameLauncherService? gameLauncher = null,
+        IJavaLocatorService? javaLocator = null)
     {
         _settingsService = settingsService;
         _themeService = themeService;
         _interaction = interaction;
         _animation = animation;
         _gameLauncher = gameLauncher;
+        _javaLocator = javaLocator;
         _settings = settingsService.Settings;
 
         StatusMessage = "设置会自动保存";
@@ -183,6 +192,9 @@ public sealed partial class SettingsPageViewModel : ObservableObject
 
         // 侧边栏切换主题时，同步本页主题下拉的选中项。
         themeService.ThemeChanged += OnThemeServiceChanged;
+
+        // 初始化 Java 检测摘要（⑦-3）。
+        RefreshJavaDetect();
 
         _isLoading = false;
     }
@@ -275,6 +287,35 @@ public sealed partial class SettingsPageViewModel : ObservableObject
         _settings.AutoDetectJava = value;
         OnPropertyChanged(nameof(IsJavaPathEditable));
         Persist();
+
+        if (value)
+        {
+            RefreshJavaDetect();
+        }
+    }
+
+    /// <summary>重新扫描本机 Java 运行时（⑦-3）。</summary>
+    [RelayCommand]
+    private void RefreshJavaDetect()
+    {
+        if (_javaLocator is null)
+        {
+            JavaDetectSummary = "Java 检测服务不可用";
+            return;
+        }
+
+        var installs = _javaLocator.FindInstalls();
+        if (installs.Count == 0)
+        {
+            JavaDetectSummary = "未检测到本机 Java，启动游戏前请安装 Java（21+）或在下方手动指定 javaw.exe 路径";
+            return;
+        }
+
+        var first = installs[0];
+        var hint = first.VersionHint is null ? string.Empty : $"（{first.VersionHint}）";
+        JavaDetectSummary = installs.Count == 1
+            ? $"检测到 1 个 Java{hint}，启动时使用：{first.Path}"
+            : $"检测到 {installs.Count} 个 Java，启动时优先使用：{first.Path}{hint}";
     }
 
     partial void OnJavaPathChanged(string value)

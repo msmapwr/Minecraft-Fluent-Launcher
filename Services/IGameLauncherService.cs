@@ -30,4 +30,20 @@ public interface IGameLauncherService
 
     /// <summary>判断某个版本是否已安装到本地。</summary>
     bool IsInstalledLocally(string versionId);
+
+    /// <summary>
+    /// 以离线会话启动一个版本（v0.2 / ⑦-4）：必要时先自动安装，
+    /// 再构造并启动 Java 进程。返回已启动的进程（输出由调用方接线日志）。
+    /// </summary>
+    /// <param name="versionId">版本标识（如 <c>1.21.4</c>）。</param>
+    /// <param name="playerName">离线玩家名。</param>
+    /// <param name="javaPath">javaw.exe 路径；<c>null</c> 时由 CMLLib 自动解析。</param>
+    /// <param name="maxRamMb">最大内存（MB）。</param>
+    /// <param name="cancellationToken">取消令牌（仅用于安装阶段）。</param>
+    System.Diagnostics.Process LaunchVanilla(
+        string versionId,
+        string playerName,
+        string? javaPath,
+        int maxRamMb,
+        CancellationToken cancellationToken = default);
 }
