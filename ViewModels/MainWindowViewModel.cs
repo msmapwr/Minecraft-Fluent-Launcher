@@ -8,7 +8,8 @@ namespace WINUI.ViewModels;
 
 /// <summary>
 /// 应用外壳的视图模型。
-/// 承载窗口标题与主题切换；侧边导航结构由 MainWindow.xaml 声明。
+/// 承载窗口标题、主题切换与「下载中 N」全局徽标（大更新 ⑧-4）；
+/// 侧边导航结构由 MainWindow.xaml 声明。
 /// </summary>
 public sealed partial class MainWindowViewModel : ObservableObject
 {
@@ -22,13 +23,30 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial ThemeOption SelectedThemeOption { get; set; }
 
-    /// <summary>正在根据主题服务广播同步选中项，避免回环写回。</summary>
+    /// <summary>队列中正在推进的任务数（全局下载徽标）。</summary>
+    [ObservableProperty]
+    public partial int ActiveDownloadCount { get; set; }
+
+    /// <summary>队列整体进度（0–100，用于标题栏按钮上的小进度环）。</summary>
+    [ObservableProperty]
+    public partial double DownloadOverallProgress { get; set; }
+
+    /// <summary>是否正在根据主题服务广播同步选中项，避免回环写回。</summary>
     private bool _isSyncingTheme;
+
+    // 队列事件在后台线程触发，徽标更新经 BoundCollectionUpdater 调度到 UI 线程。
+    private readonly BoundCollectionUpdater _queueUpdater = new();
+
+    /// <summary>是否显示下载徽标（有推进中的任务）。</summary>
+    public bool HasActiveDownloads => ActiveDownloadCount > 0;
+
+    /// <summary>徽标文案。</summary>
+    public string DownloadBadgeLabel => HasActiveDownloads ? $"下载中 {ActiveDownloadCount}" : "下载管理";
 
     /// <summary>可选主题列表（与设置页共用主题服务的单一来源）。</summary>
     public IReadOnlyList<ThemeOption> ThemeOptions { get; }
 
-    public MainWindowViewModel(IThemeService themeService)
+    public MainWindowViewModel(IThemeService themeService, IDownloadQueueService queue)
     {
         _themeService = themeService;
 
@@ -42,6 +60,28 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         // 设置页切换主题时，同步侧边栏下拉的选中项。
         themeService.ThemeChanged += OnThemeServiceChanged;
+
+        // 全局下载徽标：队列任一变化都重读当前状态。
+        queue.TaskAdded += OnQueueChanged;
+        queue.TaskChanged += OnQueueChanged;
+        queue.TaskRemoved += OnQueueChanged;
+        RefreshQueueBadge(queue);
+    }
+
+    private void OnQueueChanged(object? sender, DownloadTask task)
+        => _queueUpdater.Request(() => RefreshQueueBadge((IDownloadQueueService)sender!));
+
+    private void RefreshQueueBadge(IDownloadQueueService queue)
+    {
+        var tasks = queue.Tasks;
+
+        ActiveDownloadCount = tasks.Count(task => task.Status.IsActive());
+        DownloadOverallProgress = tasks.Count == 0
+            ? 0
+            : tasks.Average(task => task.Progress);
+
+        OnPropertyChanged(nameof(HasActiveDownloads));
+        OnPropertyChanged(nameof(DownloadBadgeLabel));
     }
 
     /// <summary>选中项变化时立即应用主题。</summary>

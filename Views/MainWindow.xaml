@@ -58,7 +58,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- 自定义标题栏：左侧为图标与标题，右侧留给系统窗口按钮 -->
+        <!-- 自定义标题栏：左侧为图标与标题，右侧为下载入口，最右留给系统窗口按钮 -->
         <Grid
             x:Name="AppTitleBar"
             Grid.Row="0"
@@ -78,6 +78,29 @@
                     Style="{StaticResource AppSectionTitleStyle}"
                     Text="{x:Bind ViewModel.AppTitle, Mode=OneWay}" />
             </StackPanel>
+
+            <!-- 全局下载入口（大更新 ⑧-4）：有任务时显示「下载中 N」+ 进度环 -->
+            <Button
+                x:Name="DownloadBadgeButton"
+                Padding="10,4"
+                Height="32"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Margin="0,0,148,0"
+                Click="OnDownloadBadgeClick">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpaceSm}">
+                    <ProgressRing
+                        Width="14"
+                        Height="14"
+                        IsActive="{x:Bind ViewModel.HasActiveDownloads, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.HasActiveDownloads, Mode=OneWay}"
+                        Value="{x:Bind ViewModel.DownloadOverallProgress, Mode=OneWay}" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource AppCaptionTextStyle}"
+                        Text="{x:Bind ViewModel.DownloadBadgeLabel, Mode=OneWay}" />
+                </StackPanel>
+            </Button>
         </Grid>
 
         <!-- 应用外壳：左侧导航 + 内容 Frame。各 NavigationViewItem 的 Tag 即路由键。 -->

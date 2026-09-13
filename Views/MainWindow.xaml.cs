@@ -89,4 +89,8 @@ public sealed partial class MainWindow : Window
             _navigation.Navigate(key);
         }
     }
+
+    /// <summary>标题栏「下载中 N」入口：打开下载队列（二级页）。</summary>
+    private void OnDownloadBadgeClick(object sender, RoutedEventArgs e)
+        => _navigation.Navigate("download-queue");
 }

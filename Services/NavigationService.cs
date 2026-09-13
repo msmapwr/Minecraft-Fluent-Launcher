@@ -11,7 +11,7 @@ namespace WINUI.Services;
 /// <para>
 /// 路由表把路由键映射到页面类型。<b>一级路由键必须与 MainWindow.xaml 中
 /// 各 NavigationViewItem 的 Tag 保持一致</b>，两处需同步修改；
-/// <c>version-detail</c> 为二级页面，仅由代码触发（携带参数）。
+/// <c>version-detail</c> 与 <c>download-queue</c> 为二级页面，仅由代码触发。
 /// </para>
 /// </summary>
 public sealed class NavigationService : INavigationService
@@ -28,6 +28,7 @@ public sealed class NavigationService : INavigationService
         ["logs"] = typeof(LogsPage),
         ["about"] = typeof(AboutPage),
         ["version-detail"] = typeof(VersionDetailPage),
+        ["download-queue"] = typeof(DownloadQueuePage),
     };
 
     /// <summary>用于在回退时还原路由键。</summary>

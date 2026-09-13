@@ -49,6 +49,9 @@ namespace WINUI
             services.AddSingleton<ILogStore, LogStore>();
             services.AddSingleton<IJavaLocatorService, JavaLocatorService>();
 
+            // 全局下载队列（大更新 ⑧-3）：与页面解耦，离开页面不中断任务。
+            services.AddSingleton<IDownloadQueueService, DownloadQueueService>();
+
             // 数据来源：⑦-1 起版本清单与实例扫描走 CMLLib 真实实现，其余查询暂由 Mock 承载（随 ⑦-5~⑦-7 真实化）。
             services.AddSingleton<MockLauncherDataService>();
             services.AddSingleton<IGameLauncherService, GameLauncherService>();
@@ -65,6 +68,7 @@ namespace WINUI
             services.AddSingleton<SettingsPageViewModel>();
             services.AddSingleton<LogsPageViewModel>();
             services.AddSingleton<AboutPageViewModel>();
+            services.AddSingleton<DownloadQueuePageViewModel>();
 
             // Views
             services.AddSingleton<MainWindow>();

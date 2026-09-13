@@ -1,11 +1,14 @@
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WINUI.Models;
 using WINUI.ViewModels;
 
 namespace WINUI.Views;
 
-/// <summary>下载中心页。条目列表（含分页）与下载队列均由视图模型驱动（Mock 数据）。</summary>
+/// <summary>
+/// 下载中心页（大更新 ⑧ 重构）。
+/// 资源类型入口 → 条目浏览 → 安装确认对话框；入队与进度由全局下载队列承担。
+/// </summary>
 public sealed partial class DownloadsPage : Page
 {
     /// <summary>视图模型。<b>必须在 <c>InitializeComponent</c> 之前赋值</b>。</summary>
@@ -20,20 +23,40 @@ public sealed partial class DownloadsPage : Page
     private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         => ViewModel.SearchText = sender.Text;
 
-    private void OnDownloadClick(object sender, RoutedEventArgs e)
+    /// <summary>「安装」按钮：弹出安装确认对话框，确认后进入全局下载队列。</summary>
+    private async void OnInstallClick(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement { Tag: DownloadItem item })
+        if (sender is not FrameworkElement { Tag: DownloadItemViewModel item })
         {
-            ViewModel.Enqueue(item);
+            return;
+        }
+
+        var dialog = await InstallConfirmDialog.CreateAsync(item.Item);
+        dialog.XamlRoot = XamlRoot;
+
+        var result = await dialog.ShowAsync();
+
+        if (result == ContentDialogResult.Primary && dialog.Result is not null)
+        {
+            ViewModel.ConfirmInstall(item, dialog.Result);
         }
     }
 
     /// <summary>「查看」按钮：进入版本详情页。</summary>
     private void OnDetailClick(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement { Tag: DownloadItem item })
+        if (sender is FrameworkElement { Tag: DownloadItemViewModel item })
         {
             ViewModel.OpenDetail(item);
+        }
+    }
+
+    /// <summary>资源类型卡点击。</summary>
+    private void OnCategoryCardClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: CategoryCardViewModel card })
+        {
+            ViewModel.SelectCategory(card);
         }
     }
 

@@ -38,6 +38,11 @@
     <x:String x:Key="IconBackGlyph">&#xE72B;</x:String>
     <x:String x:Key="IconChevronRightGlyph">&#xE76C;</x:String>
 
+    <!-- 下载中心资源类型（大更新 ⑧） -->
+    <x:String x:Key="IconTextureGlyph">&#xE8B9;</x:String>
+    <x:String x:Key="IconShaderGlyph">&#xE790;</x:String>
+    <x:String x:Key="IconWorldGlyph">&#xE809;</x:String>
+
     <!-- ==================== 信息 ==================== -->
     <x:String x:Key="IconAccountGlyph">&#xE77B;</x:String>
     <x:String x:Key="IconLogGlyph">&#xE8A5;</x:String>
