@@ -70,11 +70,13 @@ public sealed class AnimationService : IAnimationService
             return;
         }
 
-        // 页面内容进入时轻微上移淡入；StaggeringEnabled 让列表项依次出现。
+        // 页面内容进入时轻微上移淡入。
+        // 不启用 Staggering：逐项错位动画会在数据到达重建列表时与布局互相打断，
+        // 页面较重时表现为明显的「抽搐」（用户实测反馈 v0.2.1）。
         element.Transitions.Add(new EntranceThemeTransition
         {
             FromVerticalOffset = EntranceVerticalOffset,
-            IsStaggeringEnabled = true,
+            IsStaggeringEnabled = false,
         });
     }
 }

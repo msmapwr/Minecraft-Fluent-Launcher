@@ -146,12 +146,12 @@
                                         <!-- 重试 / 错误信息 -->
                                         <TextBlock
                                             Style="{StaticResource AppCaptionTextStyle}"
-                                            Foreground="{ThemeResource AppCautionBrush}"
+                                            Foreground="{ThemeResource AppWarningBrush}"
                                             Text="{x:Bind RetryNote, Mode=OneWay}"
                                             Visibility="{x:Bind HasRetryNote, Mode=OneWay}" />
                                         <TextBlock
                                             Style="{StaticResource AppCaptionTextStyle}"
-                                            Foreground="{ThemeResource AppDangerBrush}"
+                                            Foreground="{ThemeResource AppErrorBrush}"
                                             Text="{x:Bind ErrorMessage, Mode=OneWay}"
                                             Visibility="{x:Bind HasError, Mode=OneWay}" />
 
