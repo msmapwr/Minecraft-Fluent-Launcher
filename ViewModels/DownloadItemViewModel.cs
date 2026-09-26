@@ -83,6 +83,9 @@ public sealed partial class DownloadItemViewModel : ObservableObject
     /// <summary>下载次数标签。</summary>
     public string DownloadCountLabel => Item.DownloadCountLabel;
 
+    /// <summary>列表元信息标签（版本条目为通道 + 发布时间）。</summary>
+    public string MetaLabel => Item.MetaLabel;
+
     /// <summary>是否为「版本」条目（可进入详情）。</summary>
     public bool IsVersion => Item.IsVersion;
 

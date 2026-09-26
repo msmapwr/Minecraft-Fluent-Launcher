@@ -236,9 +236,7 @@
                                                 <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="·" />
                                                 <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind Version}" />
                                                 <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="·" />
-                                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind SizeLabel}" />
-                                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="·" />
-                                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind DownloadCountLabel}" />
+                                                <TextBlock Style="{StaticResource AppCaptionTextStyle}" Text="{x:Bind MetaLabel}" />
                                             </StackPanel>
                                         </StackPanel>
 

@@ -108,7 +108,12 @@ public sealed partial class DownloadTaskViewModel : ObservableObject
         IsIndeterminate = task.IsIndeterminate && task.Status.IsActive();
         SpeedLabel = task.SpeedLabel;
         RemainingLabel = task.RemainingLabel;
-        SizeLabel = $"{task.ReceivedMb:0.0} / {task.TotalMb:0.0} MB";
+        // 体积标签：真实字节 → 条目估算 → 未知。
+        SizeLabel = task.TotalBytes > 0
+            ? $"{task.ProgressedBytes / 1_000_000.0:0.0} / {task.TotalBytes / 1_000_000.0:0.0} MB"
+            : task.Item.SizeMb is { } estimated
+                ? $"{task.ReceivedMb:0.0} / {estimated:0.0} MB"
+                : "—";
         ErrorMessage = task.ErrorMessage;
         HasError = !string.IsNullOrEmpty(task.ErrorMessage);
         RetryNote = task.RetryNote;

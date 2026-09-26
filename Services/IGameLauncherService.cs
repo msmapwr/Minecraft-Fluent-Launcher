@@ -22,8 +22,19 @@ public interface IGameLauncherService
     /// <summary>按设置里的下载源配置镜像（官方 / BMCLAPI）。</summary>
     void ApplyDownloadSource(DownloadSource source);
 
-    /// <summary>安装（下载）一个版本；已安装时立即返回。</summary>
-    Task InstallAsync(string versionId, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// 安装（下载）一个版本；已安装时立即返回。
+    /// </summary>
+    /// <param name="versionId">版本标识（如 <c>1.21.4</c>）。</param>
+    /// <param name="progress">
+    /// 可选的进度接收器（大更新 ⑨-2）：由 CMLLib 的字节进度事件驱动，
+    /// 每秒回调 3–4 次，用于显示真实百分比 / 速度 / 剩余。
+    /// </param>
+    /// <param name="cancellationToken">取消令牌。</param>
+    Task InstallAsync(
+        string versionId,
+        IProgress<DownloadProgress>? progress = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>枚举本地已安装的版本目录名。</summary>
     Task<IReadOnlyList<string>> GetInstalledVersionIdsAsync(CancellationToken cancellationToken = default);
@@ -32,18 +43,21 @@ public interface IGameLauncherService
     bool IsInstalledLocally(string versionId);
 
     /// <summary>
-    /// 以离线会话启动一个版本（v0.2 / ⑦-4）：必要时先自动安装，
-    /// 再构造并启动 Java 进程。返回已启动的进程（输出由调用方接线日志）。
+    /// 以离线会话启动一个版本（v0.2 / ⑦-4；⑨-3 改为全异步）：
+    /// 必要时先自动安装（含进度回调），再构造并启动 Java 进程。
+    /// 返回<b>已启动</b>的进程（输出由调用方接线日志）。
     /// </summary>
     /// <param name="versionId">版本标识（如 <c>1.21.4</c>）。</param>
     /// <param name="playerName">离线玩家名。</param>
     /// <param name="javaPath">javaw.exe 路径；<c>null</c> 时由 CMLLib 自动解析。</param>
     /// <param name="maxRamMb">最大内存（MB）。</param>
-    /// <param name="cancellationToken">取消令牌（仅用于安装阶段）。</param>
-    System.Diagnostics.Process LaunchVanilla(
+    /// <param name="progress">可选的下载进度接收器（版本未安装时有效）。</param>
+    /// <param name="cancellationToken">取消令牌（同时作用于安装与构建阶段）。</param>
+    Task<System.Diagnostics.Process> LaunchVanillaAsync(
         string versionId,
         string playerName,
         string? javaPath,
         int maxRamMb,
+        IProgress<DownloadProgress>? progress = null,
         CancellationToken cancellationToken = default);
 }

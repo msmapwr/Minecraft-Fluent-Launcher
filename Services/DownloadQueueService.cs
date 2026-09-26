@@ -304,9 +304,9 @@ public sealed class DownloadQueueService : IDownloadQueueService
                 }
 
                 // 指数退避后重试：回到「等待中」并提示重试进度。
-                SetStatus(task, DownloadTaskStatus.Waiting, keepNote: true);
+                SetStatus(task, DownloadTaskStatus.Waiting);
                 await Task.Delay(_retryDelays[attempt]);
-                SetStatus(task, DownloadTaskStatus.Preparing, keepNote: true);
+                SetStatus(task, DownloadTaskStatus.Preparing);
             }
             finally
             {
@@ -331,13 +331,56 @@ public sealed class DownloadQueueService : IDownloadQueueService
         }
     }
 
-    /// <summary>真实安装：阶段式推进，进度以不确定形式呈现。</summary>
+    /// <summary>
+    /// 真实安装：接入 CMLLib 字节进度（大更新 ⑨-2），显示真实百分比 / 速度 / 剩余。
+    /// </summary>
     private async Task ExecuteVanillaInstallAsync(DownloadTask task, CancellationToken cancellationToken)
     {
-        Update(task, status: DownloadTaskStatus.Downloading, indeterminate: true);
-        await _gameLauncher.InstallAsync(task.Item.Version, cancellationToken);
+        Update(task, status: DownloadTaskStatus.Downloading, progress: 0, indeterminate: false, speedMbps: 0);
 
-        Update(task, status: DownloadTaskStatus.Installing, progress: 100, indeterminate: false);
+        // ByteProgress 每秒回调 3–4 次；这里只做字段更新与广播，重活由订阅方调度。
+        var lastBytes = 0L;
+        var lastAt = DateTime.UtcNow;
+
+        var progress = new Progress<DownloadProgress>(report =>
+        {
+            // 安装已结束（或已进入安装阶段）后到达的迟到回调直接丢弃。
+            if (task.Status != DownloadTaskStatus.Downloading)
+            {
+                return;
+            }
+
+            var now = DateTime.UtcNow;
+            var seconds = (now - lastAt).TotalSeconds;
+            var deltaMb = (report.ProgressedBytes - lastBytes) / 1_000_000.0;
+            var speed = seconds > 0.2 && deltaMb > 0 ? deltaMb / seconds : task.SpeedMbps;
+
+            lastBytes = report.ProgressedBytes;
+            lastAt = now;
+
+            task.TotalBytes = report.TotalBytes;
+            task.ProgressedBytes = report.ProgressedBytes;
+
+            Update(
+                task,
+                status: DownloadTaskStatus.Downloading,
+                progress: report.Ratio * 100,
+                receivedMb: report.ProgressedMb,
+                speedMbps: Math.Max(speed, 0));
+        });
+
+        try
+        {
+            await _gameLauncher.InstallAsync(task.Item.Version, progress, cancellationToken);
+        }
+        finally
+        {
+            // 报告进度可能略滞后于完成：以权威结果收口。
+            task.TotalBytes = task.TotalBytes > 0 ? task.TotalBytes : task.ProgressedBytes;
+            task.ProgressedBytes = task.TotalBytes;
+        }
+
+        Update(task, status: DownloadTaskStatus.Installing, progress: 100, indeterminate: false, speedMbps: 0);
         await Task.Delay(300, cancellationToken);
     }
 
@@ -406,16 +449,15 @@ public sealed class DownloadQueueService : IDownloadQueueService
         TaskChanged?.Invoke(this, task);
     }
 
-    /// <summary>设置状态并广播（可选保留重试提示）。</summary>
-    private void SetStatus(DownloadTask task, DownloadTaskStatus status, bool keepNote = false)
+    /// <summary>设置状态并广播。</summary>
+    private void SetStatus(DownloadTask task, DownloadTaskStatus status)
     {
         task.Status = status;
 
-        if (!keepNote)
+        // 终结状态一律收起不确定进度；推进中的不确定性由执行器显式控制。
+        if (status.IsFinished())
         {
-            task.IsIndeterminate = status is DownloadTaskStatus.Downloading or DownloadTaskStatus.Installing
-                && task.Item.Category == DownloadCategory.GameVersion
-                && !task.IsDemo;
+            task.IsIndeterminate = false;
         }
 
         TaskChanged?.Invoke(this, task);

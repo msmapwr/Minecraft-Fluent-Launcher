@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Win32;
@@ -83,6 +84,110 @@ public sealed class JavaLocatorService : IJavaLocatorService
 
     /// <inheritdoc />
     public string? FindDefaultJavaPath() => FindInstalls().FirstOrDefault()?.Path;
+
+    /// <inheritdoc />
+    public int? GetMajorVersion(string javawPath)
+    {
+        if (string.IsNullOrWhiteSpace(javawPath))
+        {
+            return null;
+        }
+
+        // javaw.exe 无控制台输出，改用同目录的 java.exe。
+        var directory = Path.GetDirectoryName(javawPath);
+        if (string.IsNullOrEmpty(directory))
+        {
+            return null;
+        }
+
+        var javaExe = Path.Combine(directory, "java.exe");
+        if (!File.Exists(javaExe))
+        {
+            javaExe = javawPath; // 退化为调用传入路径（可能失败，但无害）
+        }
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(javaExe, "-version")
+            {
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            });
+
+            if (process is null)
+            {
+                return null;
+            }
+
+            // java -version 把版本信息写到 stderr，形如：
+            //   openjdk version "21.0.3" 2024-01-16
+            //   java version "1.8.0_401"
+            var output = process.StandardError.ReadToEnd();
+
+            if (!process.WaitForExit(3000))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or SystemException)
+                {
+                    // 进程已退出或无法结束：忽略。
+                }
+
+                return null;
+            }
+
+            return ParseMajorVersion(output);
+        }
+        catch (Exception ex) when (ex is IOException
+                                       or UnauthorizedAccessException
+                                       or InvalidOperationException
+                                       or System.ComponentModel.Win32Exception)
+        {
+            // 路径不存在 / 无权限 / 无法创建进程：视为无法判定。
+            return null;
+        }
+    }
+
+    /// <summary>从 <c>java -version</c> 输出里解析主版本号（<c>1.8.0_401</c> → 8）。</summary>
+    internal static int? ParseMajorVersion(string versionOutput)
+    {
+        if (string.IsNullOrWhiteSpace(versionOutput))
+        {
+            return null;
+        }
+
+        var firstQuote = versionOutput.IndexOf('"');
+        if (firstQuote < 0)
+        {
+            return null;
+        }
+
+        var secondQuote = versionOutput.IndexOf('"', firstQuote + 1);
+        if (secondQuote <= firstQuote)
+        {
+            return null;
+        }
+
+        var raw = versionOutput.Substring(firstQuote + 1, secondQuote - firstQuote - 1);
+        var parts = raw.Split('.', '_', '-');
+
+        if (parts.Length == 0 || !int.TryParse(parts[0], out var first))
+        {
+            return null;
+        }
+
+        // 旧式版本号：1.8.0_401 → 主版本 8
+        if (first == 1 && parts.Length >= 2 && int.TryParse(parts[1], out var legacy))
+        {
+            return legacy;
+        }
+
+        return first;
+    }
 
     private static void TryAdd(Dictionary<string, JavaInstall> found, string javawPath)
     {

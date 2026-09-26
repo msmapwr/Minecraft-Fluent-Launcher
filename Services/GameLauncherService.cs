@@ -19,6 +19,12 @@ public sealed class GameLauncherService : IGameLauncherService
     private readonly ISettingsService _settings;
     private readonly MinecraftPath _path;
 
+    /// <summary>
+    /// 当前安装 / 启动流程的进度接收器（大更新 ⑨-2）。
+    /// 队列与启动页都是串行使用，同一时刻至多一个流程，因此用单槽即可。
+    /// </summary>
+    private IProgress<DownloadProgress>? _activeProgress;
+
     public GameLauncherService(ISettingsService settings)
     {
         _settings = settings;
@@ -62,22 +68,49 @@ public sealed class GameLauncherService : IGameLauncherService
             {
                 extractors.Library.LibraryServer = $"{BmclapiBase}/maven";
             }
-
             parameters.FileExtractors = extractors.ToExtractorCollection();
         }
 
         Launcher = new MinecraftLauncher(parameters);
+
+        // 真实下载进度（每秒 3–4 次）：转发给当前流程的接收器。
+        // 事件在后台线程触发；接收器实现负责把数据安全地送达界面。
+        Launcher.ByteProgressChanged += (_, e) =>
+            _activeProgress?.Report(new DownloadProgress(e.ProgressedBytes, e.TotalBytes));
     }
 
     /// <inheritdoc />
-    public async Task InstallAsync(string versionId, CancellationToken cancellationToken = default)
+    public async Task InstallAsync(
+        string versionId,
+        IProgress<DownloadProgress>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         if (IsInstalledLocally(versionId))
         {
+            // 已安装：无需下载，直接上报完成态。
+            progress?.Report(new DownloadProgress(0, 0));
             return;
         }
 
-        await Launcher.InstallAsync(versionId, cancellationToken);
+        await RunWithProgressAsync(
+            progress,
+            async () => await Launcher.InstallAsync(versionId, cancellationToken));
+    }
+
+    /// <summary>把进度接收器接到本次流程上，结束后恢复前值。</summary>
+    private async Task RunWithProgressAsync(IProgress<DownloadProgress>? progress, Func<Task> action)
+    {
+        var previous = _activeProgress;
+        _activeProgress = progress;
+
+        try
+        {
+            await action();
+        }
+        finally
+        {
+            _activeProgress = previous;
+        }
     }
 
     /// <inheritdoc />
@@ -114,11 +147,12 @@ public sealed class GameLauncherService : IGameLauncherService
     }
 
     /// <inheritdoc />
-    public System.Diagnostics.Process LaunchVanilla(
+    public async Task<System.Diagnostics.Process> LaunchVanillaAsync(
         string versionId,
         string playerName,
         string? javaPath,
         int maxRamMb,
+        IProgress<DownloadProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         var option = new CmlLib.Core.ProcessBuilder.MLaunchOption
@@ -132,10 +166,11 @@ public sealed class GameLauncherService : IGameLauncherService
             option.JavaPath = javaPath;
         }
 
-        // 版本未安装时先自动下载（InstallAsync 对已安装版本幂等）。
-        Launcher.InstallAsync(versionId, cancellationToken).GetAwaiter().GetResult();
+        // 版本未安装时先下载（InstallAsync 对已安装版本幂等）。
+        await InstallAsync(versionId, progress, cancellationToken);
 
-        var process = Launcher.BuildProcessAsync(versionId, option).GetAwaiter().GetResult();
+        // 构建启动参数（含 classpath / 资源索引 / JVM 参数），全部异步完成后再起进程。
+        var process = await Launcher.BuildProcessAsync(versionId, option);
         process.Start();
         return process;
     }

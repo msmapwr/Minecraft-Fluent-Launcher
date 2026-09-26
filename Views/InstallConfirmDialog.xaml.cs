@@ -25,8 +25,10 @@ public sealed partial class InstallConfirmDialog : ContentDialog
     /// <summary>条目名称（绑定用）。</summary>
     public string ItemName => _item.Name;
 
-    /// <summary>条目副标题（分类 · 体积 · 版本）。</summary>
-    public string ItemSubtitle => $"{_item.CategoryLabel} · {_item.Version} · {_item.SizeLabel}";
+    /// <summary>条目副标题（分类 · 版本 [· 体积]；官方清单不提供体积时省略）。</summary>
+    public string ItemSubtitle => _item.SizeMb is null
+        ? $"{_item.CategoryLabel} · {_item.Version}"
+        : $"{_item.CategoryLabel} · {_item.Version} · {_item.SizeLabel}";
 
     /// <summary>安装位置说明（仅真实安装）。</summary>
     public string LocationText { get; private set; } = string.Empty;

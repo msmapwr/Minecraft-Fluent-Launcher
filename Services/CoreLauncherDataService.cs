@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CmlLib.Core.VersionMetadata;
@@ -138,8 +139,41 @@ public sealed class CoreLauncherDataService : ILauncherDataService
     // ==================== 以下查询暂委托 Mock（随 ⑦-5~⑦-7 真实化） ====================
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<DownloadItem>> GetDownloadItemsAsync(CancellationToken cancellationToken = default)
-        => _mock.GetDownloadItemsAsync(cancellationToken);
+    /// <summary>
+    /// 下载中心条目：<b>「版本」类条目走真实官方清单</b>（大更新 ⑨-1），
+    /// 其余类型（模组 / 资源包 / 光影 / 世界 / 数据包 / 整合包）在资源站接入前仍为 Mock 演示数据。
+    /// </summary>
+    /// <remarks>
+    /// 官方清单不提供体积与下载次数，对应字段为 <c>null</c>，界面显示「—」，
+    /// 避免出现看似真实的假数据。
+    /// </remarks>
+    public async Task<IReadOnlyList<DownloadItem>> GetDownloadItemsAsync(CancellationToken cancellationToken = default)
+    {
+        var versions = await GetVersionsAsync(cancellationToken);
+
+        var result = new List<DownloadItem>(versions.Count);
+
+        foreach (var version in versions)
+        {
+            result.Add(new DownloadItem
+            {
+                Id = $"mc-{version.Id}",
+                Name = $"Minecraft {version.Id}",
+                Author = "Mojang Studios",
+                Category = DownloadCategory.GameVersion,
+                Version = version.Id,
+                Channel = version.Channel,
+                ReleasedAt = version.ReleasedAt,
+                Description = $"{version.ChannelLabel} · 发布于 {version.ReleasedAtLabel}",
+                IsInstalled = version.IsInstalled,
+            });
+        }
+
+        var others = await _mock.GetDownloadItemsAsync(cancellationToken);
+        result.AddRange(others.Where(item => !item.IsVersion));
+
+        return result;
+    }
 
     /// <inheritdoc />
     public Task<IReadOnlyList<LoaderEntry>> GetLoadersAsync(string gameVersion, CancellationToken cancellationToken = default)

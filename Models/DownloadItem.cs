@@ -23,11 +23,11 @@ public sealed class DownloadItem
     /// <summary>适配的版本范围（「版本」条目即版本号本身）。</summary>
     public required string Version { get; init; }
 
-    /// <summary>体积（MB）。</summary>
-    public required double SizeMb { get; init; }
+    /// <summary>体积（MB）；<c>null</c> 表示来源未提供（如官方版本清单）。</summary>
+    public double? SizeMb { get; init; }
 
-    /// <summary>下载次数。</summary>
-    public required int DownloadCount { get; init; }
+    /// <summary>下载次数；<c>null</c> 表示来源未提供（如官方版本清单）。</summary>
+    public int? DownloadCount { get; init; }
 
     /// <summary>简介。</summary>
     public required string Description { get; init; }
@@ -51,14 +51,29 @@ public sealed class DownloadItem
     public string CategoryLabel => Category.ToLabel();
 
     /// <summary>体积标签。</summary>
-    public string SizeLabel => SizeMb >= 1024
-        ? $"{SizeMb / 1024:0.00} GB"
-        : $"{SizeMb:0} MB";
+    public string SizeLabel => SizeMb is not { } size
+        ? "—"
+        : size >= 1024
+            ? $"{size / 1024:0.00} GB"
+            : $"{size:0} MB";
 
     /// <summary>下载次数标签。</summary>
-    public string DownloadCountLabel => DownloadCount >= 10000
-        ? $"{DownloadCount / 10000.0:0.#} 万次下载"
-        : $"{DownloadCount} 次下载";
+    public string DownloadCountLabel => DownloadCount is not { } count
+        ? "—"
+        : count >= 10000
+            ? $"{count / 10000.0:0.#} 万次下载"
+            : $"{count} 次下载";
+
+    /// <summary>
+    /// 列表元信息标签。
+    /// <para>
+    /// 「版本」条目展示真实可用信息（通道 + 发布时间）；
+    /// 其它条目展示体积与下载次数。避免在缺少真实数据时显示无意义的占位。
+    /// </para>
+    /// </summary>
+    public string MetaLabel => IsVersion
+        ? $"{ChannelLabel} · {ReleasedAtLabel}"
+        : $"{SizeLabel} · {DownloadCountLabel}";
 
     /// <summary>安装状态标签。</summary>
     public string InstallStateLabel => IsInstalled ? "已安装" : "未安装";

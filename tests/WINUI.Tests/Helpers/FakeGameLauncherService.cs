@@ -27,9 +27,13 @@ internal sealed class FakeGameLauncherService : IGameLauncherService
     {
     }
 
-    public Task InstallAsync(string versionId, CancellationToken cancellationToken = default)
+    public Task InstallAsync(string versionId, IProgress<DownloadProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref InstallCalls);
+
+        // 上报一次进度（若调用方关心）：模拟 1 MB / 1 MB。
+        progress?.Report(new DownloadProgress(1_000_000, 1_000_000));
+
         return InstallBehavior(versionId, cancellationToken);
     }
 
@@ -38,6 +42,12 @@ internal sealed class FakeGameLauncherService : IGameLauncherService
 
     public bool IsInstalledLocally(string versionId) => false;
 
-    public Process LaunchVanilla(string versionId, string playerName, string? javaPath, int maxRamMb, CancellationToken cancellationToken = default)
+    public Task<Process> LaunchVanillaAsync(
+        string versionId,
+        string playerName,
+        string? javaPath,
+        int maxRamMb,
+        IProgress<DownloadProgress>? progress = null,
+        CancellationToken cancellationToken = default)
         => throw new NotSupportedException("测试中不启动游戏进程");
 }

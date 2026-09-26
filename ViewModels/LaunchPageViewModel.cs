@@ -112,7 +112,17 @@ public sealed partial class LaunchPageViewModel : ObservableObject
         IsLoading = true;
         try
         {
-            foreach (var version in await _dataService.GetVersionsAsync())
+            var all = await _dataService.GetVersionsAsync();
+            var installed = all.Where(version => version.IsInstalled).ToList();
+
+            // 下拉只提供「可启动」的候选：已安装的版本全部列出；
+            // 一个都没装时给出最近的正式版，让「选一个 → 启动」顺带完成首次安装。
+            // （真实清单有近千个版本，全部塞进下拉不可用。）
+            var candidates = installed.Count > 0
+                ? installed
+                : all.Where(version => version.Channel == VersionChannel.Release).Take(20).ToList();
+
+            foreach (var version in candidates)
             {
                 Versions.Add(version);
             }
@@ -128,9 +138,11 @@ public sealed partial class LaunchPageViewModel : ObservableObject
             SelectedVersion = Versions.FirstOrDefault(version => version.IsInstalled)
                               ?? Versions.FirstOrDefault();
 
-            StatusMessage = SelectedVersion is null
-                ? "尚未安装任何版本"
-                : "准备就绪";
+            StatusMessage = Versions.Count == 0
+                ? "尚未安装任何版本，请先到下载中心安装"
+                : installed.Count == 0
+                    ? "选择一个版本后点「启动游戏」，将自动完成首次安装"
+                    : "准备就绪";
         }
         finally
         {
@@ -192,17 +204,54 @@ public sealed partial class LaunchPageViewModel : ObservableObject
             return;
         }
 
+        // 启动前校验 Java 主版本是否满足该版本要求（大更新 ⑨-3）。
+        var required = RequiredJavaMajor(versionId);
+        if (required is { } need)
+        {
+            var detected = _javaLocator.GetMajorVersion(javaPath);
+
+            if (detected is { } have && have < need)
+            {
+                StatusMessage = $"{versionId} 需要 Java {need}，检测到 Java {have}";
+                _logStore.Log(
+                    AppLogLevel.Error,
+                    "Launcher",
+                    $"Java 版本不足：{versionId} 需要 Java {need}，路径 {javaPath} 为 Java {have}");
+
+                _interaction.Notify(
+                    $"该版本需要 Java {need} 或更高，检测到的 Java {have} 无法启动。"
+                    + "请安装合适的 Java，或在设置页手动指定 javaw.exe 路径。",
+                    NotificationSeverity.Error,
+                    "Java 版本过低");
+
+                return;
+            }
+        }
+
         IsLaunching = true;
         LaunchProgress = 0;
         StatusMessage = "正在校验 / 下载游戏文件…";
 
+        // 真实下载进度（未安装时）：Progress 会回到 UI 线程更新绑定属性。
+        var progress = new Progress<DownloadProgress>(report =>
+        {
+            if (report.TotalBytes <= 0)
+            {
+                return;
+            }
+
+            LaunchProgress = report.Ratio * 100;
+            StatusMessage = $"正在下载游戏文件… {report.Ratio * 100:0}%（{report.ProgressedMb:0.0} / {report.TotalMb:0.0} MB）";
+        });
+
         try
         {
-            var process = await Task.Run(() =>
-            {
-                var p = _gameLauncher.LaunchVanilla(versionId, playerName, javaPath, maxRamMb);
-                return p;
-            });
+            var process = await _gameLauncher.LaunchVanillaAsync(
+                versionId,
+                playerName,
+                javaPath,
+                maxRamMb,
+                progress);
 
             AttachProcessOutput(process, versionId);
             _runningProcess = process;
@@ -224,6 +273,37 @@ public sealed partial class LaunchPageViewModel : ObservableObject
                 NotificationSeverity.Error,
                 "启动失败");
         }
+    }
+
+    /// <summary>
+    /// 该版本所需的 Java 主版本（大更新 ⑨-3）：
+    /// 1.20.5+ → 21；1.18–1.20.4 → 17；1.17 → 16；1.16.5 及更早 → 8。
+    /// 无法解析（快照 / 远古版 / 自定义版本）时返回 <c>null</c>，不做校验。
+    /// </summary>
+    internal static int? RequiredJavaMajor(string versionId)
+    {
+        var parts = versionId.Split('.');
+        if (parts.Length < 2
+            || !int.TryParse(parts[0], out var major)
+            || !int.TryParse(parts[1], out var minor)
+            || major != 1)
+        {
+            return null;
+        }
+
+        var patch = parts.Length >= 3 && int.TryParse(parts[2], out var value) ? value : 0;
+
+        if (minor >= 21 || (minor == 20 && patch >= 5))
+        {
+            return 21;
+        }
+
+        return minor switch
+        {
+            >= 18 => 17,
+            17 => 16,
+            _ => 8,
+        };
     }
 
     /// <summary>把进程 stdout / stderr 接线到日志仓库，并在退出时回收状态。</summary>

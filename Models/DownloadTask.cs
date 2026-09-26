@@ -48,8 +48,14 @@ public sealed class DownloadTask
     /// <summary>已下载体积（MB）。</summary>
     public double ReceivedMb { get; set; }
 
-    /// <summary>总体积（MB）；取自条目数据。</summary>
-    public double TotalMb => Item.SizeMb;
+    /// <summary>总体积（MB）；<c>0</c> 表示条目来源未提供（可在下载中由真实字节数补全）。</summary>
+    public double TotalMb => Item.SizeMb ?? 0;
+
+    /// <summary>真实总字节数（安装过程中由下载器上报；0 = 未知）。</summary>
+    public long TotalBytes { get; set; }
+
+    /// <summary>真实已处理字节数（安装过程中由下载器上报）。</summary>
+    public long ProgressedBytes { get; set; }
 
     /// <summary>当前速度（MB/s）。</summary>
     public double SpeedMbps { get; set; }
@@ -84,14 +90,29 @@ public sealed class DownloadTask
     /// <summary>是否已取消。</summary>
     public bool IsCancelled => Status == DownloadTaskStatus.Cancelled;
 
-    /// <summary>剩余体积标签。</summary>
-    public string RemainingLabel => Progress >= 100
-        ? "—"
-        : (TotalMb - ReceivedMb) switch
+    /// <summary>剩余体积标签（优先使用真实字节数，其次条目估算体积）。</summary>
+    public string RemainingLabel
+    {
+        get
         {
-            < 0 => "—",
-            var left => $"{left:0.0} MB",
-        };
+            if (Progress >= 100)
+            {
+                return "—";
+            }
+
+            var (total, progressed) = TotalBytes > 0
+                ? (TotalBytes / 1_000_000.0, ProgressedBytes / 1_000_000.0)
+                : (TotalMb, ReceivedMb);
+
+            if (total <= 0)
+            {
+                return "—";
+            }
+
+            var left = total - progressed;
+            return left <= 0 ? "—" : $"{left:0.0} MB";
+        }
+    }
 
     /// <summary>速度标签。</summary>
     public string SpeedLabel => SpeedMbps <= 0 ? "—" : $"{SpeedMbps:0.0} MB/s";
