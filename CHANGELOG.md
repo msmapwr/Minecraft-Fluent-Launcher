@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-26
+
+### Fixed
+
+- **下载队列页崩溃（重要）**：`DownloadQueuePage.xaml` 引用了主题中不存在的画笔键 `AppCautionBrush` / `AppDangerBrush`，打开队列页即抛 `Microsoft.UI.Xaml.Markup.XamlParseException`（HResult 0x802B000A，`Cannot find a Resource with the Name/Key AppCautionBrush`）。由于安装进度入口在队列页，该崩溃同时导致「版本真实安装」看起来不可用。已改用存在的 `AppWarningBrush` / `AppErrorBrush`（v0.2.1 产物受此影响，建议升级到 v0.2.2）。
+- **页面切换动画抽搐**：入场动画启用的逐项错位（`EntranceThemeTransition.IsStaggeringEnabled`）会与页面数据到达后重建列表互相打断，在内容较多的页面表现为明显抽搐。已关闭 stagger，保留整体上移淡入。
+
 ## [0.2.1] - 2026-09-13
 
 ### Added
