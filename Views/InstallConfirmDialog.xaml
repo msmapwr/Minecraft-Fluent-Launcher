@@ -55,7 +55,7 @@
                     IsOpen="False"
                     IsClosable="False"
                     Severity="Informational"
-                    Message="该加载器的自动安装将在 v0.3 支持，本次将先安装原版。" />
+                    Message="将一并安装该加载器所需的库文件，完成后即可直接启动。" />
             </StackPanel>
 
             <!-- 模组模式：目标版本 + 加载器 + 兼容性 -->

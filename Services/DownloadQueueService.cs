@@ -29,6 +29,7 @@ public sealed class DownloadQueueService : IDownloadQueueService
 
     private readonly object _gate = new();
     private readonly IGameLauncherService _gameLauncher;
+    private readonly ILoaderInstallerService _loaderInstaller;
     private readonly TimeSpan[] _retryDelays;
 
     /// <summary>全部任务（按入队顺序）。</summary>
@@ -43,14 +44,19 @@ public sealed class DownloadQueueService : IDownloadQueueService
     private readonly SemaphoreSlim _signal = new(0, 1);
     private bool _pumpRunning;
 
-    public DownloadQueueService(IGameLauncherService gameLauncher) : this(gameLauncher, RetryDelays)
+    public DownloadQueueService(IGameLauncherService gameLauncher) : this(gameLauncher, new LoaderInstallerService(gameLauncher), RetryDelays)
+    {
+    }
+
+    public DownloadQueueService(IGameLauncherService gameLauncher, ILoaderInstallerService loaderInstaller) : this(gameLauncher, loaderInstaller, RetryDelays)
     {
     }
 
     /// <summary>测试用构造：允许注入更短的重试退避间隔。</summary>
-    internal DownloadQueueService(IGameLauncherService gameLauncher, TimeSpan[] retryDelays)
+    internal DownloadQueueService(IGameLauncherService gameLauncher, ILoaderInstallerService loaderInstaller, TimeSpan[] retryDelays)
     {
         _gameLauncher = gameLauncher;
+        _loaderInstaller = loaderInstaller;
         _retryDelays = retryDelays;
     }
 
@@ -93,12 +99,16 @@ public sealed class DownloadQueueService : IDownloadQueueService
         string loader,
         string? targetGameVersion,
         string instanceName,
-        bool isDemo)
+        bool isDemo,
+        ModLoader? loaderKind = null,
+        string? loaderVersion = null)
     {
         var task = new DownloadTask
         {
             Item = item,
             Loader = loader,
+            LoaderKind = loaderKind,
+            LoaderVersion = loaderVersion,
             TargetGameVersion = targetGameVersion,
             InstanceName = instanceName,
             IsDemo = isDemo,
@@ -371,7 +381,22 @@ public sealed class DownloadQueueService : IDownloadQueueService
 
         try
         {
-            await _gameLauncher.InstallAsync(task.Item.Version, progress, cancellationToken);
+            if (task.LoaderKind is { } kind
+                && !string.IsNullOrEmpty(task.LoaderVersion)
+                && _loaderInstaller.CanInstall(kind))
+            {
+                // 「版本 + 加载器」：安装器内部先补齐原版，再注入加载器并下载其库。
+                await _loaderInstaller.InstallAsync(
+                    task.Item.Version,
+                    kind,
+                    task.LoaderVersion,
+                    progress,
+                    cancellationToken);
+            }
+            else
+            {
+                await _gameLauncher.InstallAsync(task.Item.Version, progress, cancellationToken);
+            }
         }
         finally
         {

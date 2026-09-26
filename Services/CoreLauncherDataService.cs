@@ -21,11 +21,16 @@ public sealed class CoreLauncherDataService : ILauncherDataService
 {
     private readonly MockLauncherDataService _mock;
     private readonly IGameLauncherService _game;
+    private readonly ILoaderCatalogService _loaderCatalog;
 
-    public CoreLauncherDataService(IGameLauncherService gameLauncher, MockLauncherDataService mock)
+    public CoreLauncherDataService(
+        IGameLauncherService gameLauncher,
+        MockLauncherDataService mock,
+        ILoaderCatalogService loaderCatalog)
     {
         _game = gameLauncher;
         _mock = mock;
+        _loaderCatalog = loaderCatalog;
     }
 
     /// <summary>
@@ -175,9 +180,21 @@ public sealed class CoreLauncherDataService : ILauncherDataService
         return result;
     }
 
-    /// <inheritdoc />
-    public Task<IReadOnlyList<LoaderEntry>> GetLoadersAsync(string gameVersion, CancellationToken cancellationToken = default)
-        => _mock.GetLoadersAsync(gameVersion, cancellationToken);
+    /// <summary>
+    /// 加载器清单：Fabric / Quilt 走<b>官方元数据</b>（大更新 ⑩-1）；
+    /// Forge / NeoForge 仍由演示数据提供，其自动安装随后续版本接入。
+    /// </summary>
+    public async Task<IReadOnlyList<LoaderEntry>> GetLoadersAsync(string gameVersion, CancellationToken cancellationToken = default)
+    {
+        var result = new List<LoaderEntry>();
+
+        result.AddRange(await _loaderCatalog.GetLoadersAsync(gameVersion, cancellationToken));
+
+        var fallback = await _mock.GetLoadersAsync(gameVersion, cancellationToken);
+        result.AddRange(fallback.Where(entry => entry.Loader is ModLoader.Forge or ModLoader.NeoForge));
+
+        return result;
+    }
 
     /// <inheritdoc />
     public Task<IReadOnlyList<ModEntry>> GetModsAsync(string instanceId, CancellationToken cancellationToken = default)

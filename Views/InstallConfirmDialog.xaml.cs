@@ -103,15 +103,22 @@ public sealed partial class InstallConfirmDialog : ContentDialog
 
         if (item.IsVersion)
         {
+            var installer = App.GetService<ILoaderInstallerService>();
             var loaders = await data.GetLoadersAsync(item.Version);
+
             var choices = new List<LoaderChoiceViewModel>
             {
                 new("Vanilla", "原版（无需加载器）"),
             };
 
-            choices.AddRange(loaders.Select(loader => new LoaderChoiceViewModel(
-                loader.Label,
-                $"推荐 {loader.RecommendedVersion} · 可在详情页选择具体版本")));
+            // 只列出当前能真实安装的加载器（Fabric / Quilt），避免给出会失败的选项。
+            choices.AddRange(loaders
+                .Where(loader => installer.CanInstall(loader.Loader))
+                .Select(loader => new LoaderChoiceViewModel(
+                    loader.Label,
+                    $"将安装推荐版本 {loader.RecommendedVersion}",
+                    loader.Loader,
+                    loader.RecommendedVersion)));
 
             return new InstallConfirmDialog(item, InstallDialogMode.GameVersion, choices, [], [], basePath);
         }
@@ -154,6 +161,16 @@ public sealed partial class InstallConfirmDialog : ContentDialog
     private string SelectedLoader => LoaderChoiceList.SelectedItem is LoaderChoiceViewModel choice
         ? choice.DisplayName
         : "Vanilla";
+
+    /// <summary>当前选中的加载器种类；原版为 <c>null</c>。</summary>
+    private ModLoader? SelectedLoaderKind => LoaderChoiceList.SelectedItem is LoaderChoiceViewModel choice
+        ? choice.Kind
+        : null;
+
+    /// <summary>当前选中的加载器版本。</summary>
+    private string? SelectedLoaderVersion => LoaderChoiceList.SelectedItem is LoaderChoiceViewModel choice
+        ? choice.Version
+        : null;
 
     /// <summary>模组模式下的目标版本号。</summary>
     private string? SelectedModTargetVersion => ModTargetVersionBox.SelectedItem is GameVersion version
@@ -214,9 +231,10 @@ public sealed partial class InstallConfirmDialog : ContentDialog
     {
         if (_mode == InstallDialogMode.GameVersion)
         {
-            SummaryTextBlock.Text = $"将安装：Minecraft {_item.Version} · 加载器：{SelectedLoader}"
-                + (SelectedLoader != "Vanilla" ? "（本次先装原版）" : string.Empty)
-                + $"\n实例名称：{InstanceNameBox.Text}";
+            SummaryTextBlock.Text = SelectedLoader == "Vanilla"
+                ? $"将安装：Minecraft {_item.Version}（原版）\n实例名称：{InstanceNameBox.Text}"
+                : $"将安装：Minecraft {_item.Version} + {SelectedLoader} {SelectedLoaderVersion}\n"
+                    + $"（含加载器所需库文件）\n实例名称：{InstanceNameBox.Text}";
         }
         else if (_mode == InstallDialogMode.Mod)
         {
@@ -244,7 +262,12 @@ public sealed partial class InstallConfirmDialog : ContentDialog
 
         Result = _mode switch
         {
-            InstallDialogMode.GameVersion => new InstallDialogResult(SelectedLoader, _item.Version, InstanceNameBox.Text.Trim()),
+            InstallDialogMode.GameVersion => new InstallDialogResult(
+                SelectedLoader,
+                _item.Version,
+                InstanceNameBox.Text.Trim(),
+                SelectedLoaderKind,
+                SelectedLoaderVersion),
             InstallDialogMode.Mod => new InstallDialogResult(
                 ModLoaderBox.SelectedItem is LoaderChoiceViewModel modLoader ? modLoader.DisplayName : "Fabric",
                 SelectedModTargetVersion,

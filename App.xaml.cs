@@ -52,6 +52,10 @@ namespace WINUI
             // 全局下载队列（大更新 ⑧-3）：与页面解耦，离开页面不中断任务。
             services.AddSingleton<IDownloadQueueService, DownloadQueueService>();
 
+            // 模组加载器（大更新 ⑩）：元数据清单 + 安装器（Fabric / Quilt）。
+            services.AddSingleton<ILoaderCatalogService, LoaderCatalogService>();
+            services.AddSingleton<ILoaderInstallerService, LoaderInstallerService>();
+
             // 数据来源：⑦-1 起版本清单与实例扫描走 CMLLib 真实实现，其余查询暂由 Mock 承载（随 ⑦-5~⑦-7 真实化）。
             services.AddSingleton<MockLauncherDataService>();
             services.AddSingleton<IGameLauncherService, GameLauncherService>();

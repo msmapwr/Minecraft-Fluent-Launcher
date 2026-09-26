@@ -24,6 +24,12 @@ public sealed class DownloadTask
     /// <summary>所选加载器（「版本」条目为 Vanilla / Fabric 等；其它条目为「不适用」）。</summary>
     public string Loader { get; init; } = "Vanilla";
 
+    /// <summary>所选加载器种类；<c>null</c> 表示只装原版。</summary>
+    public ModLoader? LoaderKind { get; init; }
+
+    /// <summary>所选加载器版本（如 <c>0.16.9</c>）。</summary>
+    public string? LoaderVersion { get; init; }
+
     /// <summary>目标游戏版本（模组等资源的兼容性预判结果；版本条目即自身版本）。</summary>
     public string? TargetGameVersion { get; init; }
 

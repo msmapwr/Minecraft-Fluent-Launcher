@@ -29,8 +29,22 @@ public interface IDownloadQueueService
     int ActiveCount { get; }
 
     /// <summary>把一个任务加入队列，并确保执行泵在运行。</summary>
+    /// <param name="item">来源条目。</param>
+    /// <param name="loader">加载器展示名（如 <c>Fabric 0.16.9</c>；只装原版时为 <c>Vanilla</c>）。</param>
+    /// <param name="targetGameVersion">目标游戏版本（模组等资源的兼容性预判结果）。</param>
+    /// <param name="instanceName">将创建的实例名。</param>
+    /// <param name="isDemo">是否为演示任务。</param>
+    /// <param name="loaderKind">所选加载器种类；<c>null</c> 表示只装原版。</param>
+    /// <param name="loaderVersion">所选加载器版本。</param>
     /// <returns>新入队的任务。</returns>
-    DownloadTask Enqueue(DownloadItem item, string loader, string? targetGameVersion, string instanceName, bool isDemo);
+    DownloadTask Enqueue(
+        DownloadItem item,
+        string loader,
+        string? targetGameVersion,
+        string instanceName,
+        bool isDemo,
+        ModLoader? loaderKind = null,
+        string? loaderVersion = null);
 
     /// <summary>取消一个推进中的任务（已下载的文件会被保留）。</summary>
     void Cancel(string taskId);

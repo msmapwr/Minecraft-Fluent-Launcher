@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -26,6 +27,7 @@ public sealed partial class VersionDetailPageViewModel : PageViewModelBase
 {
     private readonly ILauncherDataService _dataService;
     private readonly IGameLauncherService _gameLauncher;
+    private readonly ILoaderInstallerService _loaderInstaller;
     private readonly IInteractionService _interaction;
     private readonly INavigationService _navigation;
 
@@ -110,11 +112,13 @@ public sealed partial class VersionDetailPageViewModel : PageViewModelBase
     public VersionDetailPageViewModel(
         ILauncherDataService dataService,
         IGameLauncherService gameLauncher,
+        ILoaderInstallerService loaderInstaller,
         IInteractionService interaction,
         INavigationService navigation)
     {
         _dataService = dataService;
         _gameLauncher = gameLauncher;
+        _loaderInstaller = loaderInstaller;
         _interaction = interaction;
         _navigation = navigation;
         StatusMessage = "正在读取版本信息…";
@@ -249,7 +253,13 @@ public sealed partial class VersionDetailPageViewModel : PageViewModelBase
 
     private bool CanInstall() => Version is not null && !IsInstalling;
 
-    /// <summary>按当前选择一并安装（真实下载；加载器安装将在 ⑦-5 接入）。</summary>
+    /// <summary>
+    /// 按当前选择一并安装：先补齐原版，再逐个注入所选加载器（大更新 ⑩-2）。
+    /// <para>
+    /// Fabric / Quilt 走真实安装（官方 profile 元数据 + CMLLib 下载库）；
+    /// 尚未支持自动安装的加载器会被跳过并在结果中说明。
+    /// </para>
+    /// </summary>
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private async Task InstallAsync()
     {
@@ -260,28 +270,69 @@ public sealed partial class VersionDetailPageViewModel : PageViewModelBase
 
         IsInstalling = true;
         InstallProgress = 5;
+
+        var installed = new List<string>();
+        var skipped = new List<string>();
+
+        // 真实下载进度：安装阶段由 CMLLib 字节进度驱动。
+        var progress = new Progress<DownloadProgress>(report =>
+        {
+            if (report.TotalBytes <= 0)
+            {
+                return;
+            }
+
+            InstallProgress = report.Ratio * 100;
+            StatusMessage = $"正在下载… {report.Ratio * 100:0}%（{report.ProgressedMb:0.0} / {report.TotalMb:0.0} MB）";
+        });
+
         try
         {
-            var selectedLoaders = Loaders.Count(loader => loader.IsSelected);
-            StatusMessage = selectedLoaders > 0
-                ? "加载器安装将在后续版本支持，本次按原版安装…"
-                : "开始下载版本文件…";
+            StatusMessage = $"正在准备 Minecraft {Version.Version}…";
+            await _gameLauncher.InstallAsync(Version.Version, progress);
+            installed.Add($"Minecraft {Version.Version}");
 
-            // CMLLib：下载并安装版本（已安装时立即返回）。
-            await _gameLauncher.InstallAsync(Version.Version);
+            foreach (var loader in Loaders.Where(option => option.IsSelected).ToList())
+            {
+                var loaderVersion = loader.SelectedVersion?.Value ?? loader.Entry.RecommendedVersion;
+
+                if (!_loaderInstaller.CanInstall(loader.Entry.Loader))
+                {
+                    skipped.Add($"{loader.Label} {loaderVersion}");
+                    continue;
+                }
+
+                StatusMessage = $"正在安装 {loader.Label} {loaderVersion}…";
+                var versionId = await _loaderInstaller.InstallAsync(
+                    Version.Version,
+                    loader.Entry.Loader,
+                    loaderVersion,
+                    progress);
+
+                installed.Add($"{loader.Label} {loaderVersion}（{versionId}）");
+            }
 
             InstallProgress = 100;
-            StatusMessage = $"已安装到 {_gameLauncher.GamePath.BasePath}";
+
+            var summary = $"已安装：{string.Join(" + ", installed)}";
+            if (skipped.Count > 0)
+            {
+                summary += $"。{string.Join("、", skipped)} 的自动安装将在后续版本支持";
+            }
+
+            StatusMessage = summary + "。可到启动页选择该版本启动。";
             _interaction.Notify(
-                $"版本 {Version.Version} 已安装完成",
-                NotificationSeverity.Success,
+                skipped.Count > 0
+                    ? $"已安装 {string.Join(" + ", installed)}；{string.Join("、", skipped)} 暂不支持自动安装。"
+                    : $"已安装 {string.Join(" + ", installed)}，可在启动页选择它启动。",
+                skipped.Count > 0 ? NotificationSeverity.Warning : NotificationSeverity.Success,
                 "安装完成");
         }
         catch (Exception ex)
         {
             StatusMessage = $"安装失败：{ex.Message}";
             _interaction.Notify(
-                $"版本 {Version.Version} 安装失败：{ex.Message}",
+                $"安装 {Version.Version} 失败：{ex.Message}",
                 NotificationSeverity.Error,
                 "安装失败");
         }

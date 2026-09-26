@@ -456,10 +456,14 @@ public sealed partial class DownloadsPageViewModel : PageViewModelBase
             result.Loader,
             result.TargetGameVersion,
             result.TargetInstanceName,
-            isDemo: !isReal);
+            isDemo: !isReal,
+            result.LoaderKind,
+            result.LoaderVersion);
 
         StatusMessage = isReal
-            ? $"已开始安装：{item.Name}（可在右上角查看进度）"
+            ? $"已开始安装：{item.Name}"
+                + (result.LoaderKind is null ? string.Empty : $" + {result.Loader}")
+                + "（可在右上角查看进度）"
             : $"已加入队列（演示）：{item.Name}";
 
         _interaction.Notify(

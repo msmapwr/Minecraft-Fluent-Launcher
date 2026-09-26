@@ -17,4 +17,14 @@ public enum InstallDialogMode
 }
 
 /// <summary>安装确认的结果（调用方读取）。</summary>
-public sealed record InstallDialogResult(string Loader, string? TargetGameVersion, string TargetInstanceName);
+/// <param name="Loader">加载器展示名（如 <c>Fabric</c>；只装原版为 <c>Vanilla</c>）。</param>
+/// <param name="TargetGameVersion">目标游戏版本（模组等资源使用）。</param>
+/// <param name="TargetInstanceName">将创建的实例名。</param>
+/// <param name="LoaderKind">加载器种类；<c>null</c> 表示只装原版。</param>
+/// <param name="LoaderVersion">将安装的加载器版本。</param>
+public sealed record InstallDialogResult(
+    string Loader,
+    string? TargetGameVersion,
+    string TargetInstanceName,
+    ModLoader? LoaderKind = null,
+    string? LoaderVersion = null);

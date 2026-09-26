@@ -49,9 +49,14 @@ public sealed class DownloadQueueServiceTests
     private static DownloadQueueService CreateService(
         FakeGameLauncherService? launcher = null,
         TimeSpan[]? retryDelays = null)
-        => new(
-            launcher ?? new FakeGameLauncherService(),
+    {
+        var gameLauncher = launcher ?? new FakeGameLauncherService();
+
+        return new DownloadQueueService(
+            gameLauncher,
+            new LoaderInstallerService(gameLauncher),
             retryDelays ?? [TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1)]);
+    }
 
     [Fact]
     public async Task Enqueue_DemoTask_RunsThroughAndCompletes()
