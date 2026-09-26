@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-26
+
+### Added
+
+- **大更新 ⑩-2｜Forge / NeoForge 加载器真实安装**：四个主流加载器现已全部支持真实安装。
+  - **零新增依赖**：不使用第三方封装包（官方 `CmlLib.Core.Installer.Forge` 与社区 NeoForge 包在安装成功后都会**自动弹出浏览器广告页**，产品上不可接受），改为**直接调用官方 installer**——下载 installer jar 并以 `--installClient` 执行（与 HMCL 等启动器同一做法），由官方 installer 生成版本目录，随后交由 CMLLib 补齐缺失文件。
+  - **版本清单真实化**：Forge / NeoForge 走 BMCLAPI 清单（按游戏版本过滤——该版本没有对应构建时不显示该加载器）；NeoForge 稳定版优先、beta 次之。
+  - **安装结果核验**：执行后按官方命名约定定位版本目录（Forge 为 `{游戏版本}-forge-{版本}`、NeoForge 为 `neoforge-{版本}`），失败时回退按加载器版本号在版本目录中反查；installer 退出码非 0 或输出异常时，把末尾输出带入错误信息便于诊断。
+  - **进度呈现**：Forge / NeoForge 由 installer 自行下载（无法观测字节数），队列显示**不确定进度**；Fabric / Quilt 与原版仍为真实百分比。
+  - 需要 Java 运行时（手动指定路径优先，其次自动检测）；无 Java 时给出可操作提示而非进程异常。
+
+### Changed
+
+- 加载器清单不再有演示兜底：Forge / NeoForge 现在也来自真实数据源。
+
+### Tests
+
+- 新增 installer 地址构造测试（Forge 经 BMCLAPI 镜像、NeoForge 走官方 maven 的路径约定），总计 **109 个全部通过**。
+
 ## [0.3.0] - 2026-09-26
 
 ### Added

@@ -19,14 +19,17 @@ public sealed class DownloadQueuePageViewModelTests
 {
     private static DownloadQueuePageViewModel CreateViewModel(out DownloadQueueService queue)
     {
-        queue = new DownloadQueueService(new FakeGameLauncherService());
+        var gameLauncher = new FakeGameLauncherService();
+        var loaderInstaller = new LoaderInstallerService(gameLauncher, new JavaLocatorService(), new FakeSettingsService());
+
+        queue = new DownloadQueueService(gameLauncher, loaderInstaller);
 
         var animation = new AnimationService(new FakeSettingsService());
         var navigation = new NavigationService(animation);
 
         return new DownloadQueuePageViewModel(
             queue,
-            new FakeGameLauncherService(),
+            gameLauncher,
             navigation,
             new FakeInteractionService());
     }

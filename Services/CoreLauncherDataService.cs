@@ -181,20 +181,12 @@ public sealed class CoreLauncherDataService : ILauncherDataService
     }
 
     /// <summary>
-    /// 加载器清单：Fabric / Quilt 走<b>官方元数据</b>（大更新 ⑩-1）；
-    /// Forge / NeoForge 仍由演示数据提供，其自动安装随后续版本接入。
+    /// 加载器清单：全部来自真实数据源（大更新 ⑩）。
+    /// Fabric / Quilt 走官方元数据；Forge / NeoForge 走 BMCLAPI 清单
+    /// （接口本身按游戏版本过滤，该版本无对应构建时不显示该加载器）。
     /// </summary>
-    public async Task<IReadOnlyList<LoaderEntry>> GetLoadersAsync(string gameVersion, CancellationToken cancellationToken = default)
-    {
-        var result = new List<LoaderEntry>();
-
-        result.AddRange(await _loaderCatalog.GetLoadersAsync(gameVersion, cancellationToken));
-
-        var fallback = await _mock.GetLoadersAsync(gameVersion, cancellationToken);
-        result.AddRange(fallback.Where(entry => entry.Loader is ModLoader.Forge or ModLoader.NeoForge));
-
-        return result;
-    }
+    public Task<IReadOnlyList<LoaderEntry>> GetLoadersAsync(string gameVersion, CancellationToken cancellationToken = default)
+        => _loaderCatalog.GetLoadersAsync(gameVersion, cancellationToken);
 
     /// <inheritdoc />
     public Task<IReadOnlyList<ModEntry>> GetModsAsync(string instanceId, CancellationToken cancellationToken = default)

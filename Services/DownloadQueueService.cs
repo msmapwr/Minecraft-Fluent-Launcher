@@ -44,10 +44,6 @@ public sealed class DownloadQueueService : IDownloadQueueService
     private readonly SemaphoreSlim _signal = new(0, 1);
     private bool _pumpRunning;
 
-    public DownloadQueueService(IGameLauncherService gameLauncher) : this(gameLauncher, new LoaderInstallerService(gameLauncher), RetryDelays)
-    {
-    }
-
     public DownloadQueueService(IGameLauncherService gameLauncher, ILoaderInstallerService loaderInstaller) : this(gameLauncher, loaderInstaller, RetryDelays)
     {
     }
@@ -346,7 +342,16 @@ public sealed class DownloadQueueService : IDownloadQueueService
     /// </summary>
     private async Task ExecuteVanillaInstallAsync(DownloadTask task, CancellationToken cancellationToken)
     {
-        Update(task, status: DownloadTaskStatus.Downloading, progress: 0, indeterminate: false, speedMbps: 0);
+        // Forge / NeoForge 由官方 installer 自行下载，期间无法观测字节进度 → 用不确定进度；
+        // Fabric / Quilt 与纯原版走 CMLLib，可显示真实百分比。
+        var usesExternalInstaller = task.LoaderKind is ModLoader.Forge or ModLoader.NeoForge;
+
+        Update(
+            task,
+            status: DownloadTaskStatus.Downloading,
+            progress: 0,
+            indeterminate: usesExternalInstaller,
+            speedMbps: 0);
 
         // ByteProgress 每秒回调 3–4 次；这里只做字段更新与广播，重活由订阅方调度。
         var lastBytes = 0L;

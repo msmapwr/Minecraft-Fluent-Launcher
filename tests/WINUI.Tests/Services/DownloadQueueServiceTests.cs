@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WINUI.Models;
 using WINUI.Services;
+using WINUI.Tests.Helpers;
 using Xunit;
 
 namespace WINUI.Tests.Services;
@@ -54,7 +55,7 @@ public sealed class DownloadQueueServiceTests
 
         return new DownloadQueueService(
             gameLauncher,
-            new LoaderInstallerService(gameLauncher),
+            new LoaderInstallerService(gameLauncher, new JavaLocatorService(), new FakeSettingsService()),
             retryDelays ?? [TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1)]);
     }
 

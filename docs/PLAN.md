@@ -153,7 +153,7 @@
 | 2 | 实例管理真实化：实例目录（独立于官方 `.minecraft`）+ 安装版本 + `instances.json` 索引；设置页下载源接入 BMCLAPI 镜像 | ✅ 完成（实例列表改为真实扫描 versions 目录；安装接 CMLLib `InstallAsync`；BMCLAPI 替换资源/库下载服务器） |
 | 3 | Java 运行时：自动检测（JAVA_HOME / 注册表 / 常见路径）+ 手动路径生效 | ✅ 完成 |
 | 4 | 启动 vanilla：离线会话启动 + 启动页真实化 + 启动日志接线日志页 | ✅ 完成 |
-| 5 | （v0.3）加载器安装：Fabric / NeoForge / Forge / Quilt + 版本详情页真实安装 | ✅ 部分完成（Fabric / Quilt 真实安装；Forge / NeoForge 待接入） |
+| 5 | （v0.3）加载器安装：Fabric / NeoForge / Forge / Quilt + 版本详情页真实安装 | ✅ 完成（四者均真实安装） |
 | 6 | （v0.3）微软正版登录 OAuth + 账户持久化 | ⏳ 待开始 |
 | 7 | （v0.3）Modrinth + CurseForge 资源站接入（模组 / 资源包 / 光影 / 数据包 / 整合包） | ⏳ 待开始 |
 
@@ -214,8 +214,8 @@
 | 2 | 加载器安装器：官方 profile → 写入 `versions/{id}/{id}.json` → CMLLib 下载库（含解析自检） | ✅ 完成 |
 | 3 | 版本详情页「一起安装」真实执行（原版 + 逐个加载器 + 真实进度） | ✅ 完成 |
 | 4 | 下载中心安装对话框只列可安装加载器；队列任务携带加载器种类与版本并真实安装 | ✅ 完成 |
-| 5 | 测试（109 全绿）/ CHANGELOG / 发布 v0.3.0 | ✅ 完成 |
-| — | Forge / NeoForge 接入（需运行官方 installer；NuGet 有 `CmlLib.Core.Installer.Forge` 1.1.1 与社区 `CmlLib.Core.Installer.NeoForge` 4.0.1） | ⏳ 待开始 |
+| 5 | Forge / NeoForge 真实安装：**不使用第三方封装包**（官方与社区包都会自动弹浏览器广告页），改为下载官方 installer jar 并执行 `--installClient`；清单走 BMCLAPI | ✅ 完成（v0.3.1） |
+| 6 | 测试（109 全绿）/ CHANGELOG / 发布 v0.3.0 → v0.3.1 | ✅ 完成 |
 
 > 关键实现约定：**加载器版本与原版版本同构**（都是 versions 目录下的一个版本），启动流程零特判。
 > 待用户实测确认：Fabric/Quilt 库下载是否正常（依赖 CMLLib 正确解析继承链）、装完能否启动。
