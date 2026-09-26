@@ -33,6 +33,9 @@ public sealed partial class DownloadQueuePageViewModel : PageViewModelBase
     /// <summary>是否正在下载（标题徽章）。</summary>
     public bool IsDownloading => ActiveCount > 0;
 
+    /// <summary>队列里是否有任务（整体进度区仅在此时显示）。</summary>
+    public bool HasTasks => Tasks.Count > 0;
+
     /// <summary>标题徽章文案。</summary>
     public string BadgeLabel => IsDownloading ? $"下载中 {ActiveCount}" : "没有进行中的下载";
 
@@ -129,12 +132,17 @@ public sealed partial class DownloadQueuePageViewModel : PageViewModelBase
         }
 
         ActiveCount = tasks.Count(task => task.Status.IsActive());
-        UpdateContentState(Tasks.Count > 0);
+
+        // 队列数据即时可得，不存在「加载中」阶段，直接收敛为内容态或空态。
+        // ⚠️ 不能走 UpdateContentState：它在 Loading 态下会拒绝切换（防抖设计），
+        // 而基类初始态即 Loading，会让页面永远卡在加载中（v0.2.3 实测反馈）。
+        State = Tasks.Count > 0 ? PageState.Content : PageState.Empty;
 
         OnPropertyChanged(nameof(OverallProgress));
         OnPropertyChanged(nameof(QueueSummary));
         OnPropertyChanged(nameof(BadgeLabel));
         OnPropertyChanged(nameof(IsDownloading));
+        OnPropertyChanged(nameof(HasTasks));
         ClearFinishedCommand.NotifyCanExecuteChanged();
     }
 

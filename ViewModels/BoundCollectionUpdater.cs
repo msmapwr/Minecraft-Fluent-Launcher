@@ -23,8 +23,30 @@ namespace WINUI.ViewModels;
 /// </summary>
 internal sealed class BoundCollectionUpdater
 {
-    private readonly DispatcherQueue? _dispatcher = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueue? _dispatcher = TryGetDispatcher();
     private bool _queued;
+
+    /// <summary>
+    /// 取当前线程的 DispatcherQueue。
+    /// <para>
+    /// 无 WinUI 运行时的宿主（单元测试）或非 UI 线程取不到实例，
+    /// 此时 WinRT 激活会抛 <c>COMException</c>；<b>不应让这种环境差异变成崩溃</b>，
+    /// 取不到就退化为同步执行。
+    /// </para>
+    /// </summary>
+    private static DispatcherQueue? TryGetDispatcher()
+    {
+        try
+        {
+            return DispatcherQueue.GetForCurrentThread();
+        }
+        catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException
+                                       or InvalidOperationException
+                                       or TypeInitializationException)
+        {
+            return null;
+        }
+    }
 
     /// <summary>
     /// 请求执行一次集合更新；取不到 Dispatcher（非 UI 线程）时退化为同步执行。
